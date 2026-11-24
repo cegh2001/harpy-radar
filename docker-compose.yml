@@ -1,0 +1,74 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: harpy_radar_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-harpy_radar}
+    ports:
+      - "${POSTGRES_PORT_BINDING:-127.0.0.1:5433}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-harpy_radar}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.web
+    container_name: harpy_radar_web
+    restart: unless-stopped
+    ports:
+      - "${WEB_PORT_BINDING:-127.0.0.1:3000}:3000"
+    environment:
+      - DATABASE_URL=postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-harpy_radar}
+      - APP_TIMEZONE=${APP_TIMEZONE:-America/Caracas}
+      - SOURCE_BAHIA_ENABLED=${SOURCE_BAHIA_ENABLED:-true}
+      - SOURCE_RIOMARKET_ENABLED=${SOURCE_RIOMARKET_ENABLED:-true}
+      - SOURCE_FARMATODO_ENABLED=${SOURCE_FARMATODO_ENABLED:-true}
+      - SOURCE_GAMA_ENABLED=${SOURCE_GAMA_ENABLED:-false}
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3000/api/health >/dev/null 2>&1 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.worker
+    container_name: harpy_radar_worker
+    restart: unless-stopped
+    environment:
+      - DATABASE_URL=postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-harpy_radar}
+      - APP_TIMEZONE=${APP_TIMEZONE:-America/Caracas}
+      - RATE_SYNC_CRON=${RATE_SYNC_CRON:-0 */30 * * * *}
+      - BAHIA_CRON=${BAHIA_CRON:-0 5 */4 * * *}
+      - RIOMARKET_CRON=${RIOMARKET_CRON:-0 12 */4 * * *}
+      - FARMATODO_CRON=${FARMATODO_CRON:-0 20 */4 * * *}
+      - GAMA_CRON=${GAMA_CRON:-0 35 */4 * * *}
+      - SCRAPE_CONCURRENCY=${SCRAPE_CONCURRENCY:-2}
+      - SCRAPE_DELAY_MS=${SCRAPE_DELAY_MS:-400}
+      - SOURCE_BAHIA_ENABLED=${SOURCE_BAHIA_ENABLED:-true}
+      - SOURCE_RIOMARKET_ENABLED=${SOURCE_RIOMARKET_ENABLED:-true}
+      - SOURCE_FARMATODO_ENABLED=${SOURCE_FARMATODO_ENABLED:-true}
+      - SOURCE_GAMA_ENABLED=${SOURCE_GAMA_ENABLED:-false}
+      - FARMATODO_ALGOLIA_APP_ID=${FARMATODO_ALGOLIA_APP_ID:-VCOJEYD2PO}
+      - FARMATODO_ALGOLIA_API_KEY=${FARMATODO_ALGOLIA_API_KEY:-869a91e98550dd668b8b1dc04bca9011}
+      - FARMATODO_ALGOLIA_INDEX=${FARMATODO_ALGOLIA_INDEX:-products-venezuela}
+      - GAMA_WAREHOUSE_CODE=${GAMA_WAREHOUSE_CODE:-S007}
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  postgres_data:

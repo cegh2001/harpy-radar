@@ -1,3 +1,13 @@
+# Dependencies & build output
+node_modules/
+.next/
+out/
+dist/
+coverage/
+test-results/
+*.tsbuildinfo
+next-env.d.ts
+
 # Environment & secrets
 .env
 .env.*
