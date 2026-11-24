@@ -1,0 +1,73 @@
+import { pool } from "@/db/client";
+import { runDatabaseMigrations } from "@/db/run-migrations";
+import { seedDatabase } from "@/db/seed-data";
+import { runScrapeRetailerJob } from "./jobs/scrape-retailer-job";
+import { runSyncRatesJob } from "./jobs/sync-rates-job";
+import { JobRunner } from "./scheduler/job-runner";
+
+async function main() {
+  await runDatabaseMigrations();
+  await seedDatabase();
+
+  const fxResult = await JobRunner.run({
+    jobName: "job:sync-rates",
+    lockKey: "sync-rates",
+    timeoutMs: 45_000,
+    run: runSyncRatesJob,
+  });
+
+  const bahiaResult = await JobRunner.run({
+    jobName: "job:scrape-bahia",
+    lockKey: "scrape-bahia",
+    timeoutMs: 120_000,
+    run: (signal) =>
+      runScrapeRetailerJob("bahia-la-guaira", "job:scrape-bahia", signal),
+  });
+
+  const riomarketResult = await JobRunner.run({
+    jobName: "job:scrape-riomarket",
+    lockKey: "scrape-riomarket",
+    timeoutMs: 120_000,
+    run: (signal) =>
+      runScrapeRetailerJob("riomarket-caracas", "job:scrape-riomarket", signal),
+  });
+
+  const farmatodoResult = await JobRunner.run({
+    jobName: "job:scrape-farmatodo",
+    lockKey: "scrape-farmatodo",
+    timeoutMs: 120_000,
+    run: (signal) =>
+      runScrapeRetailerJob("farmatodo-ve", "job:scrape-farmatodo", signal),
+  });
+
+  const gamaResult = await JobRunner.run({
+    jobName: "job:scrape-gama",
+    lockKey: "scrape-gama",
+    timeoutMs: 120_000,
+    run: (signal) =>
+      runScrapeRetailerJob("excelsior-gama", "job:scrape-gama", signal),
+  });
+
+  console.log(
+    JSON.stringify(
+      {
+        fx: fxResult,
+        bahia: bahiaResult,
+        riomarket: riomarketResult,
+        farmatodo: farmatodoResult,
+        gama: gamaResult,
+      },
+      null,
+      2
+    )
+  );
+}
+
+main()
+  .catch((error) => {
+    console.error("One-shot worker run failed:", error);
+    process.exitCode = 1;
+  })
+  .finally(async () => {
+    await pool.end();
+  });
