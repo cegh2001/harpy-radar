@@ -35,7 +35,7 @@ const PET_FOOD_EXCLUDED_TOKENS = [
 const POULTRY_EXCLUDED_TOKENS = [
   ...PET_FOOD_EXCLUDED_TOKENS,
   "caldo", "cubito", "nugget", "nuggets", "empanizado", "jamon", "salchicha",
-  "mortadela", "bologna", "pechuga", "sopa", "res", "higado", "patas", "pata",
+  "mortadela", "bologna", "pechuga", "cuadril", "sopa", "res", "higado", "patas", "pata",
   "molleja", "mollejas", "carapacho", "alitas", "alas", "muslo", "muslos",
   "milanesa", "picado", "polly", "compota", "base", "arroz",
 ];
@@ -191,7 +191,7 @@ export const CANONICAL_BASKET_ITEMS: CanonicalBasketItem[] = [
     category: "proteins",
     baseUnit: "kg",
     basketMonthlyQty: 4,
-    searchTerms: ["pollo entero"],
+    searchTerms: ["pollo entero", "pollo"],
     requiredTokens: ["pollo"],
     excludedTokens: POULTRY_EXCLUDED_TOKENS,
     expectedMinUnitUsd: 1.8,

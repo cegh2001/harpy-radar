@@ -133,6 +133,8 @@ if (process.env.RELEASE_VERIFY_GUARD === "true") {
     SOURCE_BAHIA_ENABLED: "false",
     SOURCE_RIOMARKET_ENABLED: "false",
     SOURCE_FARMATODO_ENABLED: "false",
+    SOURCE_CENTRAL_MADEIRENSE_ENABLED: "false",
+    SOURCE_PUNTO_AL_MAYOR_ENABLED: "false",
     SOURCE_GAMA_ENABLED: "false",
   });
 

@@ -124,6 +124,14 @@ export function parsePackageSize(
     }
   }
 
+  // 4. Bare trailing mass/volume units (e.g. "Pollo La Caridad Congelado KG")
+  if (/\b(?:kg|kilo|kilos)\b/.test(normalized)) {
+    return { quantity: 1, unit: "kg", hasExplicitSize: true };
+  }
+  if (/\b(?:litro|litros|lt|lts)\b/.test(normalized)) {
+    return { quantity: 1, unit: "l", hasExplicitSize: true };
+  }
+
   return {
     quantity: 1,
     unit: fallbackBaseUnit,

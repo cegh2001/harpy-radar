@@ -3,7 +3,9 @@ import type { RetailerConnector } from "../../domain/retailer-connector";
 import { FarmatodoAlgoliaConnector } from "./farmatodo-algolia-connector";
 import { GamaOccConnector } from "./gama-occ-connector";
 import { RioMarketConnector } from "./riomarket-connector";
+import { ShopifyCatalogConnector } from "./shopify-catalog-connector";
 import { StellarWebstoreConnector } from "./stellar-webstore-connector";
+import { WooCommerceStoreConnector } from "./woocommerce-store-connector";
 
 export function createRetailerConnector(
   retailerSlug: string
@@ -30,6 +32,22 @@ export function createRetailerConnector(
         apiKey: env.FARMATODO_ALGOLIA_API_KEY,
         indexName: env.FARMATODO_ALGOLIA_INDEX,
         region: "La Guaira / Caracas",
+      });
+    case "central-madeirense":
+      if (!env.SOURCE_CENTRAL_MADEIRENSE_ENABLED) return null;
+      return new WooCommerceStoreConnector({
+        retailerSlug: "central-madeirense",
+        baseUrl: env.CENTRAL_MADEIRENSE_BASE_URL,
+        region: "La Guaira",
+        currency: "USD",
+      });
+    case "puntoalmayor-la-guaira":
+      if (!env.SOURCE_PUNTO_AL_MAYOR_ENABLED) return null;
+      return new ShopifyCatalogConnector({
+        retailerSlug: "puntoalmayor-la-guaira",
+        baseUrl: "https://puntoalmayor.com",
+        region: "La Guaira",
+        currency: "USD",
       });
     case "excelsior-gama":
       if (!env.SOURCE_GAMA_ENABLED) return null;

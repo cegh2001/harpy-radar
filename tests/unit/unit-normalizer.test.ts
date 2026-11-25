@@ -49,6 +49,12 @@ describe("unit-normalizer", () => {
       unit: "unit",
       hasExplicitSize: true,
     });
+
+    expect(parsePackageSize("Pollo La Caridad Congelado KG")).toStrictEqual({
+      quantity: 1,
+      unit: "kg",
+      hasExplicitSize: true,
+    });
   });
 
   it("calculates normalized unit prices accurately", () => {

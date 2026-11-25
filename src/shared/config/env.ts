@@ -31,13 +31,21 @@ export const envSchema = z.object({
   BAHIA_CRON: z.string().min(1).default("0 5 */4 * * *"),
   RIOMARKET_CRON: z.string().min(1).default("0 12 */4 * * *"),
   FARMATODO_CRON: z.string().min(1).default("0 20 */4 * * *"),
+  CENTRAL_MADEIRENSE_CRON: z.string().min(1).default("0 28 */4 * * *"),
+  PUNTO_AL_MAYOR_CRON: z.string().min(1).default("0 42 */4 * * *"),
   GAMA_CRON: z.string().min(1).default("0 35 */4 * * *"),
   SCRAPE_CONCURRENCY: z.coerce.number().int().positive().max(8).default(2),
   SCRAPE_DELAY_MS: z.coerce.number().int().nonnegative().default(400),
   SOURCE_BAHIA_ENABLED: booleanFlagSchema(true),
   SOURCE_RIOMARKET_ENABLED: booleanFlagSchema(true),
   SOURCE_FARMATODO_ENABLED: booleanFlagSchema(true),
+  SOURCE_CENTRAL_MADEIRENSE_ENABLED: booleanFlagSchema(true),
+  SOURCE_PUNTO_AL_MAYOR_ENABLED: booleanFlagSchema(true),
   SOURCE_GAMA_ENABLED: booleanFlagSchema(false),
+  CENTRAL_MADEIRENSE_BASE_URL: z
+    .string()
+    .url()
+    .default("https://tucentralonline.com/Maiquetia-53"),
   FARMATODO_ALGOLIA_APP_ID: z.string().min(1).default("VCOJEYD2PO"),
   FARMATODO_ALGOLIA_API_KEY: z
     .string()

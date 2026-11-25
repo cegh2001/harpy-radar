@@ -33,6 +33,8 @@ export const JOB_DISPLAY_NAMES: Record<string, string> = {
   "job:scrape-bahia": "Catálogo Bahía Supermarket",
   "job:scrape-riomarket": "Catálogo Rio Supermarket",
   "job:scrape-farmatodo": "Catálogo Farmatodo",
+  "job:scrape-central-madeirense": "Catálogo Central Madeirense",
+  "job:scrape-punto-al-mayor": "Catálogo Punto al Mayor",
   "job:scrape-gama": "Catálogo Excelsior Gama",
 };
 

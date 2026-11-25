@@ -54,14 +54,29 @@ export const RETAILER_SEEDS = [
   },
   {
     slug: "central-madeirense",
-    name: "Central Madeirense",
-    adapterKey: "manual_only",
-    baseUrl: "https://apptucentralonline.com",
-    defaultCurrency: "VES",
-    primaryRegion: "Caracas",
-    status: "planned",
-    enabled: false,
-    configJson: { platform: "Mobile App Only (Tu Central Online)" },
+    name: "Central Madeirense (Maiquetía)",
+    adapterKey: "woocommerce_store",
+    baseUrl: "https://tucentralonline.com/Maiquetia-53",
+    defaultCurrency: "USD",
+    primaryRegion: "La Guaira",
+    status: "active",
+    enabled: true,
+    configJson: {
+      platform: "WooCommerce Store API",
+      branch: "Maiquetia-53",
+      city: "La Guaira",
+    },
+  },
+  {
+    slug: "puntoalmayor-la-guaira",
+    name: "Punto al Mayor",
+    adapterKey: "shopify_catalog",
+    baseUrl: "https://puntoalmayor.com",
+    defaultCurrency: "USD",
+    primaryRegion: "La Guaira",
+    status: "active",
+    enabled: true,
+    configJson: { platform: "Shopify Catalog", city: "La Guaira" },
   },
 ] as const;
 
@@ -86,7 +101,20 @@ export async function seedDatabase(): Promise<{
         expectedMaxUnitUsd: String(item.expectedMaxUnitUsd),
         active: true,
       })
-      .onConflictDoNothing({ target: canonicalProducts.slug });
+      .onConflictDoUpdate({
+        target: canonicalProducts.slug,
+        set: {
+          name: item.name,
+          category: item.category,
+          baseUnit: item.baseUnit,
+          basketMonthlyQty: String(item.basketMonthlyQty),
+          searchTerms: item.searchTerms,
+          requiredTokens: item.requiredTokens,
+          excludedTokens: item.excludedTokens,
+          expectedMinUnitUsd: String(item.expectedMinUnitUsd),
+          expectedMaxUnitUsd: String(item.expectedMaxUnitUsd),
+        },
+      });
   }
 
   for (const retailer of RETAILER_SEEDS) {
@@ -103,7 +131,19 @@ export async function seedDatabase(): Promise<{
         enabled: retailer.enabled,
         configJson: retailer.configJson,
       })
-      .onConflictDoNothing({ target: retailers.slug });
+      .onConflictDoUpdate({
+        target: retailers.slug,
+        set: {
+          name: retailer.name,
+          adapterKey: retailer.adapterKey,
+          baseUrl: retailer.baseUrl,
+          defaultCurrency: retailer.defaultCurrency,
+          primaryRegion: retailer.primaryRegion,
+          status: retailer.status,
+          enabled: retailer.enabled,
+          configJson: retailer.configJson,
+        },
+      });
   }
 
   for (const benchmark of REFERENCE_BENCHMARKS) {

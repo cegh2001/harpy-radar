@@ -113,5 +113,21 @@ describe("product-matcher", () => {
     );
     expect(rioWhole?.canonicalSlug).toBe("pollo-entero");
     expect(rioWhole?.normalizedUnitPriceUsd).toBe(3.6207);
+
+    const cmWhole = matchRawProductToCanonical(
+      "Pollo La Caridad Congelado KG",
+      3.88,
+      CANONICAL_BASKET_ITEMS
+    );
+    expect(cmWhole?.canonicalSlug).toBe("pollo-entero");
+    expect(cmWhole?.normalizedUnitPriceUsd).toBe(3.88);
+
+    expect(
+      matchRawProductToCanonical(
+        "Cuadril De Pollo KG",
+        3.78,
+        CANONICAL_BASKET_ITEMS
+      )
+    ).toBeNull();
   });
 });

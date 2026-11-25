@@ -10,6 +10,8 @@ export const KNOWN_JOBS = [
   "job:scrape-bahia",
   "job:scrape-riomarket",
   "job:scrape-farmatodo",
+  "job:scrape-central-madeirense",
+  "job:scrape-punto-al-mayor",
   "job:scrape-gama",
 ] as const;
 
@@ -81,6 +83,32 @@ export async function startScheduler(): Promise<SchedulerController> {
       runScrapeRetailerJob("farmatodo-ve", "job:scrape-farmatodo", signal),
   });
 
+  const centralMadeirenseJob = scheduleLockedJob({
+    schedule: env.CENTRAL_MADEIRENSE_CRON,
+    jobName: "job:scrape-central-madeirense",
+    lockKey: "scrape-central-madeirense",
+    timeoutMs: 120_000,
+    run: (signal) =>
+      runScrapeRetailerJob(
+        "central-madeirense",
+        "job:scrape-central-madeirense",
+        signal
+      ),
+  });
+
+  const puntoAlMayorJob = scheduleLockedJob({
+    schedule: env.PUNTO_AL_MAYOR_CRON,
+    jobName: "job:scrape-punto-al-mayor",
+    lockKey: "scrape-punto-al-mayor",
+    timeoutMs: 120_000,
+    run: (signal) =>
+      runScrapeRetailerJob(
+        "puntoalmayor-la-guaira",
+        "job:scrape-punto-al-mayor",
+        signal
+      ),
+  });
+
   const gamaJob = scheduleLockedJob({
     schedule: env.GAMA_CRON,
     jobName: "job:scrape-gama",
@@ -96,6 +124,8 @@ export async function startScheduler(): Promise<SchedulerController> {
       bahiaJob.stop();
       riomarketJob.stop();
       farmatodoJob.stop();
+      centralMadeirenseJob.stop();
+      puntoAlMayorJob.stop();
       gamaJob.stop();
     },
   };

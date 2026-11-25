@@ -40,6 +40,30 @@ async function main() {
       runScrapeRetailerJob("farmatodo-ve", "job:scrape-farmatodo", signal),
   });
 
+  const centralMadeirenseResult = await JobRunner.run({
+    jobName: "job:scrape-central-madeirense",
+    lockKey: "scrape-central-madeirense",
+    timeoutMs: 120_000,
+    run: (signal) =>
+      runScrapeRetailerJob(
+        "central-madeirense",
+        "job:scrape-central-madeirense",
+        signal
+      ),
+  });
+
+  const puntoAlMayorResult = await JobRunner.run({
+    jobName: "job:scrape-punto-al-mayor",
+    lockKey: "scrape-punto-al-mayor",
+    timeoutMs: 120_000,
+    run: (signal) =>
+      runScrapeRetailerJob(
+        "puntoalmayor-la-guaira",
+        "job:scrape-punto-al-mayor",
+        signal
+      ),
+  });
+
   const gamaResult = await JobRunner.run({
     jobName: "job:scrape-gama",
     lockKey: "scrape-gama",
@@ -55,6 +79,8 @@ async function main() {
         bahia: bahiaResult,
         riomarket: riomarketResult,
         farmatodo: farmatodoResult,
+        centralMadeirense: centralMadeirenseResult,
+        puntoAlMayor: puntoAlMayorResult,
         gama: gamaResult,
       },
       null,

@@ -67,7 +67,7 @@ export function BasketKpiGrid({ basket, retailers }: BasketKpiGridProps) {
           {activeRetailersCount} / {retailers.length}
         </div>
         <div className="mt-1 text-xs text-slate-400">
-          Bahía (La Guaira), Rio (Caracas), Farmatodo
+          Bahía, Central M., Punto al Mayor, Rio, Farmatodo
         </div>
       </div>
 

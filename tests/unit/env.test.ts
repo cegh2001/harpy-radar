@@ -13,7 +13,12 @@ describe("parseEnv", () => {
     expect(parsed.SOURCE_BAHIA_ENABLED).toBe(true);
     expect(parsed.SOURCE_RIOMARKET_ENABLED).toBe(true);
     expect(parsed.SOURCE_FARMATODO_ENABLED).toBe(true);
+    expect(parsed.SOURCE_CENTRAL_MADEIRENSE_ENABLED).toBe(true);
+    expect(parsed.SOURCE_PUNTO_AL_MAYOR_ENABLED).toBe(true);
     expect(parsed.SOURCE_GAMA_ENABLED).toBe(false);
+    expect(parsed.CENTRAL_MADEIRENSE_BASE_URL).toBe(
+      "https://tucentralonline.com/Maiquetia-53"
+    );
     expect(parsed.SCRAPE_CONCURRENCY).toBe(2);
     expect(parsed.GAMA_WAREHOUSE_CODE).toBe("S007");
   });
