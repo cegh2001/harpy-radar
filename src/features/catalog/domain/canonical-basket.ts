@@ -14,3 +14,7 @@ export const CANONICAL_BASKET_ITEMS: CanonicalBasketItem[] = [
   ...BASKET_PROTEIN_ITEMS,
   ...BASKET_HYGIENE_ITEMS,
 ];
+
+export const CANONICAL_BASKET_BY_SLUG = new Map<string, CanonicalBasketItem>(
+  CANONICAL_BASKET_ITEMS.map((item) => [item.slug, item])
+);

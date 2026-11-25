@@ -28,6 +28,23 @@ function containsToken(
   return tokens.includes(clean);
 }
 
+function matchesExcludedToken(
+  normalizedTitle: string,
+  tokens: string[],
+  excludedToken: string
+): boolean {
+  const clean = normalizeText(excludedToken);
+  if (!clean) return false;
+  if (clean.includes(" ")) {
+    return normalizedTitle.includes(clean);
+  }
+  if (tokens.includes(clean)) return true;
+  if (clean.length >= 4) {
+    return tokens.includes(`${clean}s`) || tokens.includes(`${clean}es`);
+  }
+  return false;
+}
+
 function matchesRequiredGroup(
   normalizedTitle: string,
   tokens: string[],
@@ -37,6 +54,24 @@ function matchesRequiredGroup(
   return alternatives.some((alt) =>
     containsToken(normalizedTitle, tokens, alt)
   );
+}
+
+function matchesPrimarySubject(
+  normalizedTitle: string,
+  tokens: string[],
+  firstGroup: string | undefined
+): boolean {
+  if (!firstGroup) return false;
+  const leadTokens = tokens.slice(0, 2);
+  return firstGroup
+    .split("|")
+    .map((part) => normalizeText(part))
+    .filter(Boolean)
+    .some((clean) =>
+      clean.includes(" ")
+        ? normalizedTitle.startsWith(clean)
+        : leadTokens.includes(clean)
+    );
 }
 
 /**
@@ -60,7 +95,7 @@ export function matchRawProductToCanonical(
 
   for (const item of catalog) {
     const hasExcluded = item.excludedTokens.some((excluded) =>
-      containsToken(normalizedTitle, tokens, excluded)
+      matchesExcludedToken(normalizedTitle, tokens, excluded)
     );
     if (hasExcluded) continue;
 
@@ -71,6 +106,22 @@ export function matchRawProductToCanonical(
 
     const packageSize = parsePackageSize(rawTitle, item.baseUnit);
     if (packageSize.unit !== item.baseUnit) continue;
+
+    if (item.requireExplicitSize && !packageSize.hasExplicitSize) {
+      continue;
+    }
+    if (
+      item.minPackageSize !== undefined &&
+      packageSize.quantity < item.minPackageSize
+    ) {
+      continue;
+    }
+    if (
+      item.maxPackageSize !== undefined &&
+      packageSize.quantity > item.maxPackageSize
+    ) {
+      continue;
+    }
 
     // Require explicit size for weight/volume items unless price already falls cleanly in range
     if (!packageSize.hasExplicitSize && item.baseUnit !== "unit") {
@@ -94,9 +145,17 @@ export function matchRawProductToCanonical(
       continue;
     }
 
-    const confidence = packageSize.hasExplicitSize
-      ? Math.min(0.99, 0.78 + item.requiredTokens.length * 0.08)
-      : 0.72;
+    const baseConfidence = packageSize.hasExplicitSize
+      ? Math.min(0.97, 0.78 + item.requiredTokens.length * 0.08)
+      : Math.min(0.76, 0.64 + item.requiredTokens.length * 0.04);
+    const primaryBonus = matchesPrimarySubject(
+      normalizedTitle,
+      tokens,
+      item.requiredTokens[0]
+    )
+      ? 0.02
+      : 0;
+    const confidence = Math.min(0.99, baseConfidence + primaryBonus);
 
     if (!bestMatch || confidence > bestMatch.confidence) {
       bestMatch = {

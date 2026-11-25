@@ -25,4 +25,7 @@ export interface CanonicalBasketItem {
   excludedTokens: string[];
   expectedMinUnitUsd: number;
   expectedMaxUnitUsd: number;
+  minPackageSize?: number;
+  maxPackageSize?: number;
+  requireExplicitSize?: boolean;
 }

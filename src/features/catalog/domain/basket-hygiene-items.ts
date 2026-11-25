@@ -50,6 +50,7 @@ export const BASKET_HYGIENE_ITEMS: CanonicalBasketItem[] = [
     ],
     expectedMinUnitUsd: 0.25,
     expectedMaxUnitUsd: 2.5,
+    requireExplicitSize: true,
   },
   {
     slug: "crema-dental",
@@ -161,6 +162,7 @@ export const BASKET_HYGIENE_ITEMS: CanonicalBasketItem[] = [
     ],
     expectedMinUnitUsd: 0.08,
     expectedMaxUnitUsd: 1.5,
+    requireExplicitSize: true,
   },
   {
     slug: "afeitadora-desechable",

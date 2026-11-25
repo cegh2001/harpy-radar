@@ -1,10 +1,11 @@
 import { eq } from "drizzle-orm";
 import { db } from "@/db/client";
 import { canonicalProducts, type CanonicalProductRow } from "@/db/schema";
-import type {
-  BaseUnit,
-  BasketCategory,
-  CanonicalBasketItem,
+import {
+  CANONICAL_BASKET_BY_SLUG,
+  type BaseUnit,
+  type BasketCategory,
+  type CanonicalBasketItem,
 } from "../domain/canonical-basket";
 
 export interface CatalogProductRecord extends CanonicalBasketItem {
@@ -20,6 +21,7 @@ function normalizeCategory(raw: string): BasketCategory {
 }
 
 function mapRowToRecord(row: CanonicalProductRow): CatalogProductRecord {
+  const staticSpec = CANONICAL_BASKET_BY_SLUG.get(row.slug);
   return {
     id: row.id,
     slug: row.slug,
@@ -32,6 +34,9 @@ function mapRowToRecord(row: CanonicalProductRow): CatalogProductRecord {
     excludedTokens: row.excludedTokens,
     expectedMinUnitUsd: Number(row.expectedMinUnitUsd),
     expectedMaxUnitUsd: Number(row.expectedMaxUnitUsd),
+    minPackageSize: staticSpec?.minPackageSize,
+    maxPackageSize: staticSpec?.maxPackageSize,
+    requireExplicitSize: staticSpec?.requireExplicitSize,
     active: row.active,
   };
 }
