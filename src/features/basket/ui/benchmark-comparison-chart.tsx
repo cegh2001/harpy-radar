@@ -11,10 +11,12 @@ import {
   YAxis,
 } from "recharts";
 import type { BenchmarkDto } from "../infrastructure/benchmark-repository";
+import { formatUsd } from "./formatters";
 
 interface BenchmarkComparisonChartProps {
   benchmarks: BenchmarkDto[];
   harpyBasketUsd: number;
+  harpyAvgBasketUsd?: number;
   coveredCount: number;
   totalCount: number;
 }
@@ -22,12 +24,19 @@ interface BenchmarkComparisonChartProps {
 export function BenchmarkComparisonChart({
   benchmarks,
   harpyBasketUsd,
+  harpyAvgBasketUsd,
   coveredCount,
   totalCount,
 }: BenchmarkComparisonChartProps) {
   const byMonth = new Map<
     string,
-    { period: string; cendasUsd?: number; ovfUsd?: number; harpyUsd?: number }
+    {
+      period: string;
+      cendasUsd?: number;
+      ovfUsd?: number;
+      harpyUsd?: number;
+      harpyAvgUsd?: number;
+    }
   >();
 
   for (const item of benchmarks) {
@@ -45,11 +54,14 @@ export function BenchmarkComparisonChart({
     data.push({
       period: "Harpy En Vivo",
       harpyUsd: harpyBasketUsd,
+      ...(typeof harpyAvgBasketUsd === "number"
+        ? { harpyAvgUsd: harpyAvgBasketUsd }
+        : {}),
     });
   }
 
   return (
-    <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+    <div className="flex h-full flex-col rounded-xl border border-slate-800 bg-slate-900/60 p-4">
       <div className="mb-3 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="text-sm font-semibold text-slate-100">
@@ -57,13 +69,13 @@ export function BenchmarkComparisonChart({
           </h2>
           <p className="text-xs text-slate-400">
             Canasta alimentaria mensual de referencia (CENDAS-FVM 60 productos,
-            OVF USD) frente a nuestra canasta curada de 24 productos (
+            OVF USD) frente a nuestra canasta curada de {totalCount} productos (
             {coveredCount}/{totalCount} cubiertos).
           </p>
         </div>
       </div>
 
-      <div className="h-72 w-full">
+      <div className="h-80 w-full">
         {data.length === 0 ? (
           <div className="flex h-full items-center justify-center text-xs text-slate-500">
             Aún no hay referencias institucionales cargadas.
@@ -79,6 +91,11 @@ export function BenchmarkComparisonChart({
                 tickFormatter={(v) => `$${v}`}
               />
               <Tooltip
+                formatter={(value) =>
+                  typeof value === "number"
+                    ? formatUsd(value)
+                    : String(value ?? "—")
+                }
                 contentStyle={{
                   backgroundColor: "#0f172a",
                   borderColor: "#334155",
@@ -101,8 +118,14 @@ export function BenchmarkComparisonChart({
               />
               <Bar
                 dataKey="harpyUsd"
-                name="Harpy Radar (24 productos)"
+                name="Harpy Mínimo (BCV)"
                 fill="#10b981"
+                radius={[4, 4, 0, 0]}
+              />
+              <Bar
+                dataKey="harpyAvgUsd"
+                name="Harpy Promedio (BCV)"
+                fill="#818cf8"
                 radius={[4, 4, 0, 0]}
               />
             </BarChart>

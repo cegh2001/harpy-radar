@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { getDashboardSnapshot } from "@/features/basket/application/get-dashboard-snapshot";
 import { DashboardClientShell } from "@/features/basket/ui/dashboard-client-shell";
 import { DashboardHeader } from "@/features/basket/ui/dashboard-header";
@@ -63,7 +64,7 @@ export default async function HomePage() {
       />
 
       {!dbConnected && (
-        <div className="mx-auto mt-4 max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto mt-4 max-w-[1600px] px-4 sm:px-6 lg:px-8">
           <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-xs text-amber-200">
             La base de datos está sin conexión o pendiente de migración; se
             muestra el catálogo canónico estático y las referencias
@@ -75,7 +76,9 @@ export default async function HomePage() {
         </div>
       )}
 
-      <DashboardClientShell snapshot={snapshot} />
+      <Suspense fallback={null}>
+        <DashboardClientShell snapshot={snapshot} />
+      </Suspense>
     </div>
   );
 }

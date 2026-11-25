@@ -10,9 +10,9 @@ interface DashboardHeaderProps {
 export function DashboardHeader({ rates, generatedAt }: DashboardHeaderProps) {
   return (
     <header className="border-b border-slate-800/80 bg-slate-950/95">
-      <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-5 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
-        <div className="space-y-1.5">
-          <div className="flex flex-wrap items-center gap-2.5">
+      <div className="mx-auto flex max-w-[1600px] flex-col gap-3 px-4 py-3.5 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
+        <div className="space-y-1">
+          <div className="flex flex-wrap items-center gap-2">
             <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-0.5 text-xs font-semibold tracking-wide text-emerald-300">
               <Radar className="h-3.5 w-3.5" />
               HARPY RADAR
@@ -26,17 +26,17 @@ export function DashboardHeader({ rates, generatedAt }: DashboardHeaderProps) {
               Corte {formatRelativeIso(generatedAt)}
             </span>
           </div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-50 sm:text-3xl">
+          <h1 className="text-xl font-bold tracking-tight text-slate-50 sm:text-2xl">
             Monitor de Canasta Básica en Venezuela
           </h1>
-          <p className="text-sm text-slate-400">
+          <p className="text-xs text-slate-400">
             Precios unitarios normalizados ($/kg, $/L, $/unidad) en comercios
             activos, vinculados a la tasa oficial del BCV y referencia paralela.
           </p>
         </div>
 
-        <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-4">
-          <div className="rounded-lg border border-slate-800 bg-slate-900/70 px-3 py-2">
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+          <div className="rounded-lg border border-slate-800 bg-slate-900/70 px-3 py-1.5">
             <div className="flex items-center gap-1 text-[11px] font-medium uppercase tracking-wider text-slate-400">
               <DollarSign className="h-3 w-3 text-emerald-400" />
               BCV USD
@@ -49,7 +49,7 @@ export function DashboardHeader({ rates, generatedAt }: DashboardHeaderProps) {
             </div>
           </div>
 
-          <div className="rounded-lg border border-slate-800 bg-slate-900/70 px-3 py-2">
+          <div className="rounded-lg border border-slate-800 bg-slate-900/70 px-3 py-1.5">
             <div className="text-[11px] font-medium uppercase tracking-wider text-slate-400">
               BCV EUR
             </div>
@@ -63,7 +63,7 @@ export function DashboardHeader({ rates, generatedAt }: DashboardHeaderProps) {
             </div>
           </div>
 
-          <div className="rounded-lg border border-slate-800 bg-slate-900/70 px-3 py-2">
+          <div className="rounded-lg border border-slate-800 bg-slate-900/70 px-3 py-1.5">
             <div className="text-[11px] font-medium uppercase tracking-wider text-slate-400">
               Dólar Paralelo
             </div>
@@ -75,7 +75,7 @@ export function DashboardHeader({ rates, generatedAt }: DashboardHeaderProps) {
             </div>
           </div>
 
-          <div className="rounded-lg border border-slate-800 bg-slate-900/70 px-3 py-2">
+          <div className="rounded-lg border border-slate-800 bg-slate-900/70 px-3 py-1.5">
             <div className="text-[11px] font-medium uppercase tracking-wider text-slate-400">
               Brecha Cambiaria
             </div>

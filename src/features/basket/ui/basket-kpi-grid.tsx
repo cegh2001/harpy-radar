@@ -9,24 +9,28 @@ interface BasketKpiGridProps {
 }
 
 export function BasketKpiGrid({ basket, retailers }: BasketKpiGridProps) {
-  const activeRetailersCount = retailers.filter((r) => r.enabled).length;
+  const activeRetailers = retailers.filter((r) => r.enabled);
+  const activeRetailersSummary =
+    activeRetailers.length > 0
+      ? activeRetailers.map((r) => r.name).join(", ")
+      : "Sin conectores activos";
 
   return (
     <section
       aria-label="Resumen de métricas de la canasta"
-      className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4"
+      className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4"
     >
-      <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-4">
+      <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-3.5">
         <div className="flex items-center justify-between text-xs font-medium uppercase tracking-wider text-slate-400">
           <span>Canasta Mensual (BCV)</span>
           <ShoppingBasket className="h-4 w-4 text-emerald-400" />
         </div>
-        <div className="mt-2 text-2xl font-bold text-emerald-300 tabular-nums">
+        <div className="mt-1.5 text-2xl font-bold text-emerald-300 tabular-nums">
           {basket.coveredProductsCount > 0
             ? formatUsd(basket.estimatedMonthlyBasketUsdBcv)
             : "—"}
         </div>
-        <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-slate-400 tabular-nums">
+        <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-slate-400 tabular-nums">
           <span>
             {basket.coveredProductsCount > 0
               ? formatVes(basket.estimatedMonthlyBasketVes)
@@ -45,12 +49,12 @@ export function BasketKpiGrid({ basket, retailers }: BasketKpiGridProps) {
         </div>
       </div>
 
-      <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-4">
+      <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-3.5">
         <div className="flex items-center justify-between text-xs font-medium uppercase tracking-wider text-slate-400">
           <span>Cobertura del Catálogo</span>
           <Layers className="h-4 w-4 text-sky-400" />
         </div>
-        <div className="mt-2 text-2xl font-bold text-slate-50 tabular-nums">
+        <div className="mt-1.5 text-2xl font-bold text-slate-50 tabular-nums">
           {basket.coveredProductsCount} / {basket.totalProductsCount}
         </div>
         <div className="mt-1 text-xs text-slate-400 tabular-nums">
@@ -58,25 +62,25 @@ export function BasketKpiGrid({ basket, retailers }: BasketKpiGridProps) {
         </div>
       </div>
 
-      <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-4">
+      <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-3.5">
         <div className="flex items-center justify-between text-xs font-medium uppercase tracking-wider text-slate-400">
           <span>Conectores Activos</span>
           <Store className="h-4 w-4 text-emerald-400" />
         </div>
-        <div className="mt-2 text-2xl font-bold text-slate-50 tabular-nums">
-          {activeRetailersCount} / {retailers.length}
+        <div className="mt-1.5 text-2xl font-bold text-slate-50 tabular-nums">
+          {activeRetailers.length} / {retailers.length}
         </div>
-        <div className="mt-1 text-xs text-slate-400">
-          Bahía, Central M., Punto al Mayor, Rio, Farmatodo
+        <div className="mt-1 truncate text-xs text-slate-400" title={activeRetailersSummary}>
+          {activeRetailersSummary}
         </div>
       </div>
 
-      <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-4">
+      <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-3.5">
         <div className="flex items-center justify-between text-xs font-medium uppercase tracking-wider text-slate-400">
           <span>Diferencia vs. Referencia</span>
           <Scale className="h-4 w-4 text-amber-400" />
         </div>
-        <div className="mt-2 text-2xl font-bold text-slate-50 tabular-nums">
+        <div className="mt-1.5 text-2xl font-bold text-slate-50 tabular-nums">
           {formatPct(basket.benchmarkDeltaPct)}
         </div>
         <div className="mt-1 text-xs text-slate-400">
