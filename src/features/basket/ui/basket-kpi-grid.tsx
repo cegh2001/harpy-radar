@@ -13,12 +13,12 @@ export function BasketKpiGrid({ basket, retailers }: BasketKpiGridProps) {
 
   return (
     <section
-      aria-label="Basket summary metrics"
+      aria-label="Resumen de métricas de la canasta"
       className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4"
     >
       <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-4">
         <div className="flex items-center justify-between text-xs font-medium uppercase tracking-wider text-slate-400">
-          <span>Monthly Basket (BCV)</span>
+          <span>Canasta Mensual (BCV)</span>
           <ShoppingBasket className="h-4 w-4 text-emerald-400" />
         </div>
         <div className="mt-2 text-2xl font-bold text-emerald-300 tabular-nums">
@@ -30,16 +30,16 @@ export function BasketKpiGrid({ basket, retailers }: BasketKpiGridProps) {
           <span>
             {basket.coveredProductsCount > 0
               ? formatVes(basket.estimatedMonthlyBasketVes)
-              : "Run worker to ingest prices"}
+              : "Ejecuta el worker para ingerir precios"}
           </span>
           {basket.coveredProductsCount > 0 && (
             <span className="text-sky-300">
-              · Avg basket: {formatUsd(basket.estimatedMonthlyBasketAvgUsdBcv)}
+              · Promedio: {formatUsd(basket.estimatedMonthlyBasketAvgUsdBcv)}
             </span>
           )}
           {basket.estimatedMonthlyBasketUsdParallel !== null && (
             <span className="text-amber-300">
-              · {formatUsd(basket.estimatedMonthlyBasketUsdParallel)} parallel
+              · {formatUsd(basket.estimatedMonthlyBasketUsdParallel)} paralelo
             </span>
           )}
         </div>
@@ -47,20 +47,20 @@ export function BasketKpiGrid({ basket, retailers }: BasketKpiGridProps) {
 
       <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-4">
         <div className="flex items-center justify-between text-xs font-medium uppercase tracking-wider text-slate-400">
-          <span>Catalog Coverage</span>
+          <span>Cobertura del Catálogo</span>
           <Layers className="h-4 w-4 text-sky-400" />
         </div>
         <div className="mt-2 text-2xl font-bold text-slate-50 tabular-nums">
           {basket.coveredProductsCount} / {basket.totalProductsCount}
         </div>
         <div className="mt-1 text-xs text-slate-400 tabular-nums">
-          {basket.coveragePct.toFixed(1)}% of canonical basket items matched
+          {basket.coveragePct.toFixed(1)}% de los productos canónicos relevados
         </div>
       </div>
 
       <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-4">
         <div className="flex items-center justify-between text-xs font-medium uppercase tracking-wider text-slate-400">
-          <span>Active Connectors</span>
+          <span>Conectores Activos</span>
           <Store className="h-4 w-4 text-emerald-400" />
         </div>
         <div className="mt-2 text-2xl font-bold text-slate-50 tabular-nums">
@@ -73,7 +73,7 @@ export function BasketKpiGrid({ basket, retailers }: BasketKpiGridProps) {
 
       <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-4">
         <div className="flex items-center justify-between text-xs font-medium uppercase tracking-wider text-slate-400">
-          <span>Benchmark Delta</span>
+          <span>Diferencia vs. Referencia</span>
           <Scale className="h-4 w-4 text-amber-400" />
         </div>
         <div className="mt-2 text-2xl font-bold text-slate-50 tabular-nums">
@@ -81,8 +81,8 @@ export function BasketKpiGrid({ basket, retailers }: BasketKpiGridProps) {
         </div>
         <div className="mt-1 text-xs text-slate-400">
           {basket.benchmarkReferenceLabel
-            ? `vs ${basket.benchmarkReferenceLabel}`
-            : "Awaiting covered basket items"}
+            ? `vs. ${basket.benchmarkReferenceLabel}`
+            : "Esperando productos cubiertos"}
         </div>
       </div>
     </section>

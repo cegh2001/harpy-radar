@@ -49,7 +49,7 @@ export function ProductPriceTable({
   if (products.length === 0) {
     return (
       <div className="rounded-xl border border-slate-800 bg-slate-900/50 p-8 text-center text-sm text-slate-400">
-        No canonical basket products match the current filter.
+        Ningún producto de la canasta coincide con el filtro actual.
       </div>
     );
   }
@@ -60,19 +60,23 @@ export function ProductPriceTable({
         <table className="min-w-full divide-y divide-slate-800 text-left text-sm">
           <thead className="bg-slate-900/90 text-xs uppercase tracking-wider text-slate-400">
             <tr>
-              <th className="px-4 py-3 font-medium">Product</th>
-              <th className="px-4 py-3 font-medium">Category</th>
+              <th className="px-4 py-3 font-medium">Producto</th>
+              <th className="px-4 py-3 font-medium">Categoría</th>
               <th className="px-4 py-3 font-medium text-right">
-                Best Unit Price
+                Mejor precio unit.
               </th>
               <th className="px-4 py-3 font-medium text-right">
-                Avg Unit Price
+                Precio promedio
               </th>
-              <th className="px-4 py-3 font-medium text-right">Monthly Qty</th>
-              <th className="px-4 py-3 font-medium">Best Retailer</th>
-              <th className="px-4 py-3 font-medium text-right">Spread</th>
-              <th className="px-4 py-3 font-medium text-center">Stock</th>
-              <th className="px-4 py-3 font-medium text-right">Inspect</th>
+              <th className="px-4 py-3 font-medium text-right">
+                Cant. mensual
+              </th>
+              <th className="px-4 py-3 font-medium">Mejor cadena</th>
+              <th className="px-4 py-3 font-medium text-right">Dispersión</th>
+              <th className="px-4 py-3 font-medium text-center">
+                Disponibilidad
+              </th>
+              <th className="px-4 py-3 font-medium text-right">Detalle</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-800/70">
@@ -86,59 +90,59 @@ export function ProductPriceTable({
                     {product.name}
                   </div>
                   <div className="text-xs text-slate-500">
-                    Base unit: {product.baseUnit} · {product.retailerCount}{" "}
-                    retailer(s)
+                    Unidad base: {product.baseUnit} · {product.retailerCount}{" "}
+                    cadena(s)
                   </div>
                 </td>
                 <td className="px-4 py-3 text-xs text-slate-300">
-                  <span className="rounded-md border border-slate-700/80 bg-slate-800/70 px-2 py-0.5">
+                  <span className="inline-block whitespace-nowrap rounded-md border border-slate-700/80 bg-slate-800/70 px-2 py-0.5">
                     {CATEGORY_LABELS[product.category]}
                   </span>
                 </td>
-                <td className="px-4 py-3 text-right font-semibold text-emerald-300 tabular-nums">
+                <td className="px-4 py-3 text-right font-semibold text-emerald-300 tabular-nums whitespace-nowrap">
                   {renderUnitPrice(product, currencyMode)}
                   <span className="ml-1 text-xs font-normal text-slate-500">
                     /{product.baseUnit}
                   </span>
                 </td>
-                <td className="px-4 py-3 text-right font-medium text-slate-200 tabular-nums">
+                <td className="px-4 py-3 text-right font-medium text-slate-200 tabular-nums whitespace-nowrap">
                   {renderAverageUnitPrice(product, currencyMode)}
                   <span className="ml-1 text-xs font-normal text-slate-500">
                     /{product.baseUnit}
                   </span>
                 </td>
-                <td className="px-4 py-3 text-right text-slate-300 tabular-nums">
+                <td className="px-4 py-3 text-right text-slate-300 tabular-nums whitespace-nowrap">
                   {product.basketMonthlyQty} {product.baseUnit}
                 </td>
                 <td className="px-4 py-3 text-slate-200">
                   {product.cheapestRetailerName ?? (
-                    <span className="text-slate-500">No observations</span>
+                    <span className="text-slate-500">Sin observaciones</span>
                   )}
                 </td>
-                <td className="px-4 py-3 text-right text-amber-200 tabular-nums">
+                <td className="px-4 py-3 text-right text-amber-200 tabular-nums whitespace-nowrap">
                   {formatPct(product.spreadPct)}
                 </td>
-                <td className="px-4 py-3 text-center">
+                <td className="px-4 py-3 text-center whitespace-nowrap">
                   {product.retailerCount === 0 ? (
                     <span className="text-xs text-slate-500">—</span>
                   ) : product.inStockAny ? (
                     <span className="inline-flex items-center gap-1 text-xs text-emerald-400">
                       <CheckCircle2 className="h-3.5 w-3.5" />
-                      In stock
+                      Disponible
                     </span>
                   ) : (
                     <span className="inline-flex items-center gap-1 text-xs text-rose-400">
                       <CircleSlash className="h-3.5 w-3.5" />
-                      Out
+                      Agotado
                     </span>
                   )}
                 </td>
-                <td className="px-4 py-3 text-right">
+                <td className="px-4 py-3 text-right whitespace-nowrap">
                   <Link
                     href={`/products/${product.slug}`}
                     className="inline-flex items-center gap-1 rounded-md border border-slate-700 px-2.5 py-1 text-xs font-medium text-slate-200 transition hover:border-emerald-500/50 hover:text-emerald-300"
                   >
-                    Compare
+                    Comparar
                     <ArrowUpRight className="h-3.5 w-3.5" />
                   </Link>
                 </td>

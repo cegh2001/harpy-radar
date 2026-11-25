@@ -41,12 +41,13 @@ export function ProductHistoryChart({
   return (
     <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
       <h2 className="mb-3 text-sm font-semibold text-slate-100">
-        30-Day Normalized Unit Price History (USD BCV / {baseUnit})
+        Historial de Precio Unitario Normalizado (30 días · USD BCV /{" "}
+        {baseUnit})
       </h2>
       <div className="h-72 w-full">
         {chartData.length === 0 ? (
           <div className="flex h-full items-center justify-center text-xs text-slate-500">
-            No historical observations recorded yet for this product.
+            Aún no hay observaciones históricas registradas para este producto.
           </div>
         ) : (
           <ResponsiveContainer width="100%" height="100%">

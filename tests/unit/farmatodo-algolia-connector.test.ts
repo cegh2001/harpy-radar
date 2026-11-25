@@ -55,4 +55,43 @@ describe("FarmatodoAlgoliaConnector", () => {
     expect(hits[1].storeAvailabilityCount).toBe(0);
     expect(hits[1].originalAmount).toBe(800);
   });
+
+  it("handles missing global fullPrice via fullPriceByCity and skips non-target cities", async () => {
+    const connector = new FarmatodoAlgoliaConnector({
+      appId: "VCOJEYD2PO",
+      apiKey: "test-key",
+      indexName: "products-venezuela",
+      fetchFn: async () =>
+        new Response(
+          JSON.stringify({
+            hits: [
+              {
+                id: "115941521",
+                objectID: "115941521",
+                mediaDescription: "Pastelitos Integrales Carne Molida",
+                fullPriceByCity: [{ cityCode: "COR", fullPrice: 8332 }],
+                stores_with_stock: [667],
+              },
+              {
+                id: "115941522",
+                objectID: "115941522",
+                mediaDescription: "Carne Molida 1 Kg",
+                fullPriceByCity: [
+                  { cityCode: "COR", fullPrice: 1300 },
+                  { cityCode: "CCS", fullPrice: 1200 },
+                ],
+                stores_with_stock: [108],
+              },
+            ],
+          }),
+          { status: 200 }
+        ),
+    });
+
+    const hits = await connector.searchProducts("carne molida");
+    expect(hits).toHaveLength(1);
+    expect(hits[0].externalSku).toBe("115941522");
+    expect(hits[0].originalAmount).toBe(1200);
+    expect(hits[0].originalCurrency).toBe("VES");
+  });
 });

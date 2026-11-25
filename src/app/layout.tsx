@@ -3,16 +3,16 @@ import type { ReactNode } from "react";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Harpy Radar | Venezuela Basic Basket Monitor",
+  title: "Harpy Radar | Monitor de Canasta Básica en Venezuela",
   description:
-    "Near-zero-cost retail price and availability telemetry for the Venezuelan basic basket across La Guaira and Caracas.",
+    "Monitoreo de precios y disponibilidad de la canasta básica en Venezuela, con foco en La Guaira y Caracas.",
 };
 
 export default function RootLayout({
   children,
 }: Readonly<{ children: ReactNode }>) {
   return (
-    <html lang="en" className="dark">
+    <html lang="es" className="dark">
       <body className="min-h-screen bg-slate-950 text-slate-100 antialiased">
         {children}
       </body>

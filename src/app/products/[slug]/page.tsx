@@ -43,33 +43,37 @@ export default async function ProductDetailPage({
               className="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-300 hover:text-emerald-200"
             >
               <ArrowLeft className="h-3.5 w-3.5" />
-              Back to Basket Telemetry
+              Volver al monitor
             </Link>
             <h1 className="text-2xl font-bold text-slate-50">
               {product.name}
             </h1>
             <p className="text-xs text-slate-400">
-              {CATEGORY_LABELS[product.category]} · Base unit:{" "}
-              {product.baseUnit} · Monthly basket weight:{" "}
+              {CATEGORY_LABELS[product.category]} · Unidad base:{" "}
+              {product.baseUnit} · Peso mensual en canasta:{" "}
               {product.basketMonthlyQty} {product.baseUnit}
             </p>
           </div>
 
           <div className="flex flex-wrap items-center gap-5 text-right tabular-nums">
             <div>
-              <div className="text-xs text-slate-400">Best Unit Price</div>
+              <div className="text-xs text-slate-400">
+                Mejor precio unitario
+              </div>
               <div className="text-xl font-bold text-emerald-300">
                 {formatUsd(product.cheapestUnitUsdBcv)} / {product.baseUnit}
               </div>
             </div>
             <div>
-              <div className="text-xs text-slate-400">Average Unit Price</div>
+              <div className="text-xs text-slate-400">Precio promedio</div>
               <div className="text-xl font-bold text-slate-100">
                 {formatUsd(product.averageUnitUsdBcv)} / {product.baseUnit}
               </div>
             </div>
             <div>
-              <div className="text-xs text-slate-400">Cross-Retailer Spread</div>
+              <div className="text-xs text-slate-400">
+                Dispersión entre cadenas
+              </div>
               <div className="text-xl font-bold text-amber-200">
                 {formatPct(product.spreadPct)}
               </div>
@@ -79,23 +83,23 @@ export default async function ProductDetailPage({
 
         <section className="overflow-hidden rounded-xl border border-slate-800 bg-slate-900/60">
           <div className="border-b border-slate-800 px-4 py-3 text-sm font-semibold text-slate-100">
-            Latest Retailer Observations
+            Últimas observaciones por cadena
           </div>
           {product.retailers.length === 0 ? (
             <div className="p-6 text-sm text-slate-400">
-              No retail observations recorded for this product yet.
+              Aún no hay observaciones registradas para este producto.
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-slate-800 text-left text-sm">
                 <thead className="bg-slate-900/90 text-xs uppercase text-slate-400">
                   <tr>
-                    <th className="px-4 py-2.5">Retailer</th>
-                    <th className="px-4 py-2.5">Matched Listing</th>
-                    <th className="px-4 py-2.5 text-right">Pack Size</th>
-                    <th className="px-4 py-2.5 text-right">Normalized BCV</th>
-                    <th className="px-4 py-2.5 text-right">VES Price</th>
-                    <th className="px-4 py-2.5 text-right">Observed</th>
+                    <th className="px-4 py-2.5">Cadena</th>
+                    <th className="px-4 py-2.5">Producto detectado</th>
+                    <th className="px-4 py-2.5 text-right">Presentación</th>
+                    <th className="px-4 py-2.5 text-right">Normalizado BCV</th>
+                    <th className="px-4 py-2.5 text-right">Precio VES</th>
+                    <th className="px-4 py-2.5 text-right">Observado</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-800/70">
@@ -118,7 +122,7 @@ export default async function ProductDetailPage({
                               target="_blank"
                               rel="noreferrer"
                               className="text-slate-400 hover:text-emerald-300"
-                              aria-label={`Open ${obs.retailerName} listing`}
+                              aria-label={`Abrir ficha en ${obs.retailerName}`}
                             >
                               <ExternalLink className="h-3.5 w-3.5" />
                             </a>

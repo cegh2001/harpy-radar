@@ -19,19 +19,19 @@ export function DashboardHeader({ rates, generatedAt }: DashboardHeaderProps) {
             </span>
             <span className="inline-flex items-center gap-1 rounded-full border border-slate-700 bg-slate-900 px-2.5 py-0.5 text-xs text-slate-300">
               <MapPin className="h-3 w-3 text-sky-400" />
-              La Guaira &amp; Caracas
+              La Guaira y Caracas
             </span>
             <span className="inline-flex items-center gap-1 text-xs text-slate-400">
               <Activity className="h-3 w-3 text-emerald-400" />
-              Snapshot {formatRelativeIso(generatedAt)}
+              Corte {formatRelativeIso(generatedAt)}
             </span>
           </div>
           <h1 className="text-2xl font-bold tracking-tight text-slate-50 sm:text-3xl">
-            Venezuela Basic Basket Telemetry
+            Monitor de Canasta Básica en Venezuela
           </h1>
           <p className="text-sm text-slate-400">
-            Normalized unit pricing ($/kg, $/L, $/unit) across active retail
-            catalogs pinned to BCV &amp; parallel exchange rates.
+            Precios unitarios normalizados ($/kg, $/L, $/unidad) en comercios
+            activos, vinculados a la tasa oficial del BCV y referencia paralela.
           </p>
         </div>
 
@@ -45,7 +45,7 @@ export function DashboardHeader({ rates, generatedAt }: DashboardHeaderProps) {
               {rates.official ? formatVes(rates.official.usdRate) : "—"}
             </div>
             <div className="text-[11px] text-slate-500">
-              {rates.official ? rates.official.rateDate : "Awaiting sync"}
+              {rates.official ? rates.official.rateDate : "En espera"}
             </div>
           </div>
 
@@ -65,7 +65,7 @@ export function DashboardHeader({ rates, generatedAt }: DashboardHeaderProps) {
 
           <div className="rounded-lg border border-slate-800 bg-slate-900/70 px-3 py-2">
             <div className="text-[11px] font-medium uppercase tracking-wider text-slate-400">
-              Parallel USD
+              Dólar Paralelo
             </div>
             <div className="mt-0.5 text-base font-semibold text-amber-300 tabular-nums">
               {rates.parallel ? formatVes(rates.parallel.usdRate) : "—"}
@@ -77,12 +77,12 @@ export function DashboardHeader({ rates, generatedAt }: DashboardHeaderProps) {
 
           <div className="rounded-lg border border-slate-800 bg-slate-900/70 px-3 py-2">
             <div className="text-[11px] font-medium uppercase tracking-wider text-slate-400">
-              FX Gap
+              Brecha Cambiaria
             </div>
             <div className="mt-0.5 text-base font-semibold text-amber-200 tabular-nums">
               {formatPct(rates.gapPct)}
             </div>
-            <div className="text-[11px] text-slate-500">Parallel vs BCV</div>
+            <div className="text-[11px] text-slate-500">Paralelo vs. BCV</div>
           </div>
         </div>
       </div>

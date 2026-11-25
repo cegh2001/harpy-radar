@@ -15,7 +15,7 @@ interface DashboardClientShellProps {
 }
 
 const REGIONS = [
-  { id: "all", label: "All Regions" },
+  { id: "all", label: "Todas las regiones" },
   { id: "La Guaira", label: "La Guaira" },
   { id: "Caracas", label: "Caracas" },
 ];
@@ -23,7 +23,7 @@ const REGIONS = [
 const CURRENCY_MODES: Array<{ id: CurrencyDisplayMode; label: string }> = [
   { id: "usd_bcv", label: "USD (BCV)" },
   { id: "ves", label: "VES (Bs.)" },
-  { id: "usd_parallel", label: "USD (Parallel)" },
+  { id: "usd_parallel", label: "USD (Paralelo)" },
 ];
 
 export function DashboardClientShell({ snapshot }: DashboardClientShellProps) {
@@ -118,12 +118,12 @@ export function DashboardClientShell({ snapshot }: DashboardClientShellProps) {
           ))}
 
           <select
-            aria-label="Filter by category"
+            aria-label="Filtrar por categoría"
             value={categoryFilter}
             onChange={(e) => setCategoryFilter(e.target.value)}
             className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-1.5 text-xs text-slate-200 focus:border-emerald-500 focus:outline-none"
           >
-            <option value="all">All Categories</option>
+            <option value="all">Todas las categorías</option>
             {(Object.keys(CATEGORY_LABELS) as BasketCategory[]).map((cat) => (
               <option key={cat} value={cat}>
                 {CATEGORY_LABELS[cat]}
@@ -139,7 +139,7 @@ export function DashboardClientShell({ snapshot }: DashboardClientShellProps) {
               type="search"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search product..."
+              placeholder="Buscar producto..."
               className="w-48 rounded-lg border border-slate-700 bg-slate-950 py-1.5 pl-8 pr-3 text-xs text-slate-100 placeholder:text-slate-500 focus:border-emerald-500 focus:outline-none"
             />
           </div>

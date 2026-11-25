@@ -5,14 +5,26 @@ import {
   type RetailerConnector,
 } from "../../domain/retailer-connector";
 
+const nullablePriceSchema = z
+  .union([z.number(), z.string(), z.null(), z.undefined()])
+  .optional();
+
 const farmatodoHitSchema = z.object({
   id: z.union([z.string(), z.number()]).optional(),
   objectID: z.string().min(1),
   barcode: z.string().nullable().optional(),
   mediaDescription: z.string().nullable().optional(),
   description: z.string().nullable().optional(),
-  fullPrice: z.coerce.number().nonnegative(),
-  offerPrice: z.coerce.number().nonnegative().nullable().optional(),
+  fullPrice: nullablePriceSchema,
+  offerPrice: nullablePriceSchema,
+  fullPriceByCity: z
+    .array(
+      z.object({
+        cityCode: z.string(),
+        fullPrice: nullablePriceSchema,
+      })
+    )
+    .optional(),
   stores_with_stock: z.array(z.union([z.number(), z.string()])).optional(),
   url: z.string().nullable().optional(),
   mediaImageUrl: z.string().nullable().optional(),
@@ -21,6 +33,42 @@ const farmatodoHitSchema = z.object({
 const algoliaResponseSchema = z.object({
   hits: z.array(farmatodoHitSchema),
 });
+
+const PRIORITY_CITY_CODES = new Set(["CCS", "LG", "MAI", "CARACAS"]);
+
+function parseOptionalPositiveNumber(value: unknown): number | null {
+  if (typeof value === "number") {
+    return Number.isFinite(value) && value > 0 ? value : null;
+  }
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    if (!trimmed) return null;
+    const parsed = Number.parseFloat(trimmed);
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+  }
+  return null;
+}
+
+function resolveHitBasePrice(
+  hit: z.infer<typeof farmatodoHitSchema>
+): number | null {
+  const globalPrice = parseOptionalPositiveNumber(hit.fullPrice);
+  if (globalPrice !== null) {
+    return globalPrice;
+  }
+
+  for (const entry of hit.fullPriceByCity ?? []) {
+    if (!PRIORITY_CITY_CODES.has(entry.cityCode.trim().toUpperCase())) {
+      continue;
+    }
+    const cityPrice = parseOptionalPositiveNumber(entry.fullPrice);
+    if (cityPrice !== null) {
+      return cityPrice;
+    }
+  }
+
+  return null;
+}
 
 export interface FarmatodoConnectorOptions {
   retailerSlug?: string;
@@ -87,13 +135,14 @@ export class FarmatodoAlgoliaConnector implements RetailerConnector {
         const title = (hit.mediaDescription || hit.description || "").trim();
         if (!title) return null;
 
+        const basePrice = resolveHitBasePrice(hit);
+        if (basePrice === null) return null;
+
+        const offerPrice = parseOptionalPositiveNumber(hit.offerPrice);
         const effectivePrice =
-          hit.offerPrice && hit.offerPrice > 0 && hit.offerPrice < hit.fullPrice
-            ? hit.offerPrice
-            : hit.fullPrice;
-        if (!Number.isFinite(effectivePrice) || effectivePrice <= 0) {
-          return null;
-        }
+          offerPrice !== null && offerPrice < basePrice
+            ? offerPrice
+            : basePrice;
 
         const stores = hit.stores_with_stock ?? [];
         const externalSku = String(hit.id ?? hit.objectID);

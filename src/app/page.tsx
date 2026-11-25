@@ -65,10 +65,11 @@ export default async function HomePage() {
       {!dbConnected && (
         <div className="mx-auto mt-4 max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-xs text-amber-200">
-            Database is currently offline or unmigrated — displaying static
-            canonical catalog &amp; reference benchmarks. Start PostgreSQL with{" "}
-            <code>docker compose up -d postgres</code>, run{" "}
-            <code>pnpm db:migrate &amp;&amp; pnpm db:seed</code>, and trigger{" "}
+            La base de datos está sin conexión o pendiente de migración; se
+            muestra el catálogo canónico estático y las referencias
+            institucionales. Inicia PostgreSQL con{" "}
+            <code>docker compose up -d postgres</code>, ejecuta{" "}
+            <code>pnpm db:migrate &amp;&amp; pnpm db:seed</code> y luego{" "}
             <code>pnpm worker:once</code>.
           </div>
         </div>
