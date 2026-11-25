@@ -61,7 +61,7 @@ export const CANONICAL_BASKET_ITEMS: CanonicalBasketItem[] = [
     basketMonthlyQty: 6,
     searchTerms: ["arroz blanco", "arroz 1kg"],
     requiredTokens: ["arroz"],
-    excludedTokens: ["harina", "leche", "inflado", "tostado", "integral", "risotto", "sushi", "chocolate"],
+    excludedTokens: ["harina", "leche", "crema", "inflado", "tostado", "integral", "risotto", "sushi", "chocolate"],
     expectedMinUnitUsd: 0.7,
     expectedMaxUnitUsd: 4.0,
   },

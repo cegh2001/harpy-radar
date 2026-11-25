@@ -78,6 +78,32 @@ export const RETAILER_SEEDS = [
     enabled: true,
     configJson: { platform: "Shopify Catalog", city: "La Guaira" },
   },
+  {
+    slug: "viva-la-guaira",
+    name: "Viva Supercentro",
+    adapterKey: "cscart_store",
+    baseUrl: "https://vivaenlinea.com",
+    defaultCurrency: "USD",
+    primaryRegion: "La Guaira",
+    status: "active",
+    enabled: true,
+    configJson: {
+      platform: "CS-Cart Storefront",
+      branch: "La Guaira",
+      city: "La Guaira",
+    },
+  },
+  {
+    slug: "locatel-caracas",
+    name: "Locatel",
+    adapterKey: "vtex_catalog",
+    baseUrl: "https://www.locatel.com.ve",
+    defaultCurrency: "VES",
+    primaryRegion: "Caracas",
+    status: "active",
+    enabled: true,
+    configJson: { platform: "VTEX Catalog API", city: "Caracas" },
+  },
 ] as const;
 
 export async function seedDatabase(): Promise<{

@@ -1,10 +1,12 @@
 import { env } from "@/shared/config/env";
 import type { RetailerConnector } from "../../domain/retailer-connector";
+import { CsCartStoreConnector } from "./cscart-store-connector";
 import { FarmatodoAlgoliaConnector } from "./farmatodo-algolia-connector";
 import { GamaOccConnector } from "./gama-occ-connector";
 import { RioMarketConnector } from "./riomarket-connector";
 import { ShopifyCatalogConnector } from "./shopify-catalog-connector";
 import { StellarWebstoreConnector } from "./stellar-webstore-connector";
+import { VtexCatalogConnector } from "./vtex-catalog-connector";
 import { WooCommerceStoreConnector } from "./woocommerce-store-connector";
 
 export function createRetailerConnector(
@@ -48,6 +50,28 @@ export function createRetailerConnector(
         baseUrl: "https://puntoalmayor.com",
         region: "La Guaira",
         currency: "USD",
+      });
+    case "viva-la-guaira":
+      if (!env.SOURCE_VIVA_ENABLED) return null;
+      return new CsCartStoreConnector({
+        retailerSlug: "viva-la-guaira",
+        baseUrl: "https://vivaenlinea.com",
+        region: "La Guaira",
+        currency: "USD",
+        location: {
+          country: "VE",
+          state: "VE-X",
+          stateText: "La Guaira",
+          city: "La Guaira",
+        },
+      });
+    case "locatel-caracas":
+      if (!env.SOURCE_LOCATEL_ENABLED) return null;
+      return new VtexCatalogConnector({
+        retailerSlug: "locatel-caracas",
+        baseUrl: "https://www.locatel.com.ve",
+        region: "Caracas",
+        currency: "VES",
       });
     case "excelsior-gama":
       if (!env.SOURCE_GAMA_ENABLED) return null;

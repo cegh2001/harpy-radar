@@ -64,6 +64,22 @@ async function main() {
       ),
   });
 
+  const vivaResult = await JobRunner.run({
+    jobName: "job:scrape-viva",
+    lockKey: "scrape-viva",
+    timeoutMs: 120_000,
+    run: (signal) =>
+      runScrapeRetailerJob("viva-la-guaira", "job:scrape-viva", signal),
+  });
+
+  const locatelResult = await JobRunner.run({
+    jobName: "job:scrape-locatel",
+    lockKey: "scrape-locatel",
+    timeoutMs: 120_000,
+    run: (signal) =>
+      runScrapeRetailerJob("locatel-caracas", "job:scrape-locatel", signal),
+  });
+
   const gamaResult = await JobRunner.run({
     jobName: "job:scrape-gama",
     lockKey: "scrape-gama",
@@ -81,6 +97,8 @@ async function main() {
         farmatodo: farmatodoResult,
         centralMadeirense: centralMadeirenseResult,
         puntoAlMayor: puntoAlMayorResult,
+        viva: vivaResult,
+        locatel: locatelResult,
         gama: gamaResult,
       },
       null,

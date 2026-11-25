@@ -33,6 +33,8 @@ export const envSchema = z.object({
   FARMATODO_CRON: z.string().min(1).default("0 20 */4 * * *"),
   CENTRAL_MADEIRENSE_CRON: z.string().min(1).default("0 28 */4 * * *"),
   PUNTO_AL_MAYOR_CRON: z.string().min(1).default("0 42 */4 * * *"),
+  VIVA_CRON: z.string().min(1).default("0 48 */4 * * *"),
+  LOCATEL_CRON: z.string().min(1).default("0 54 */4 * * *"),
   GAMA_CRON: z.string().min(1).default("0 35 */4 * * *"),
   SCRAPE_CONCURRENCY: z.coerce.number().int().positive().max(8).default(2),
   SCRAPE_DELAY_MS: z.coerce.number().int().nonnegative().default(400),
@@ -41,6 +43,8 @@ export const envSchema = z.object({
   SOURCE_FARMATODO_ENABLED: booleanFlagSchema(true),
   SOURCE_CENTRAL_MADEIRENSE_ENABLED: booleanFlagSchema(true),
   SOURCE_PUNTO_AL_MAYOR_ENABLED: booleanFlagSchema(true),
+  SOURCE_VIVA_ENABLED: booleanFlagSchema(true),
+  SOURCE_LOCATEL_ENABLED: booleanFlagSchema(true),
   SOURCE_GAMA_ENABLED: booleanFlagSchema(false),
   CENTRAL_MADEIRENSE_BASE_URL: z
     .string()

@@ -12,6 +12,8 @@ export const KNOWN_JOBS = [
   "job:scrape-farmatodo",
   "job:scrape-central-madeirense",
   "job:scrape-punto-al-mayor",
+  "job:scrape-viva",
+  "job:scrape-locatel",
   "job:scrape-gama",
 ] as const;
 
@@ -118,6 +120,24 @@ export async function startScheduler(): Promise<SchedulerController> {
       runScrapeRetailerJob("excelsior-gama", "job:scrape-gama", signal),
   });
 
+  const vivaJob = scheduleLockedJob({
+    schedule: env.VIVA_CRON,
+    jobName: "job:scrape-viva",
+    lockKey: "scrape-viva",
+    timeoutMs: 120_000,
+    run: (signal) =>
+      runScrapeRetailerJob("viva-la-guaira", "job:scrape-viva", signal),
+  });
+
+  const locatelJob = scheduleLockedJob({
+    schedule: env.LOCATEL_CRON,
+    jobName: "job:scrape-locatel",
+    lockKey: "scrape-locatel",
+    timeoutMs: 120_000,
+    run: (signal) =>
+      runScrapeRetailerJob("locatel-caracas", "job:scrape-locatel", signal),
+  });
+
   return {
     stop: () => {
       rateSyncJob.stop();
@@ -126,6 +146,8 @@ export async function startScheduler(): Promise<SchedulerController> {
       farmatodoJob.stop();
       centralMadeirenseJob.stop();
       puntoAlMayorJob.stop();
+      vivaJob.stop();
+      locatelJob.stop();
       gamaJob.stop();
     },
   };
