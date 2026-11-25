@@ -1,110 +1,26 @@
+import type { BasketCategory } from "@/features/catalog/domain/canonical-basket";
 import type {
-  BaseUnit,
-  BasketCategory,
-} from "@/features/catalog/domain/canonical-basket";
+  BasketIndexSummary,
+  BasketObservationInput,
+  BasketProductInput,
+  BenchmarkReferenceInput,
+  CategorySubtotal,
+  ProductPriceSummary,
+  RetailerOfferOption,
+  RetailerPriceBreakdown,
+} from "./basket-types";
+import { selectRetailerOffers } from "./select-retailer-offers";
 
-export interface BasketProductInput {
-  id: number;
-  slug: string;
-  name: string;
-  category: BasketCategory;
-  baseUnit: BaseUnit;
-  basketMonthlyQty: number;
-}
-
-export interface BasketObservationInput {
-  canonicalProductId: number;
-  retailerId: number;
-  retailerSlug: string;
-  retailerName: string;
-  rawTitle: string;
-  originalAmount: number;
-  originalCurrency: "USD" | "VES";
-  priceUsdBcv: number;
-  priceVes: number;
-  priceUsdParallel: number | null;
-  packageSize: number;
-  packageUnit: BaseUnit;
-  normalizedUnitPriceUsd: number;
-  inStock: boolean;
-  storeAvailabilityCount: number | null;
-  productUrl: string | null;
-  region: string;
-  observedAt: Date;
-}
-
-export interface RetailerPriceBreakdown {
-  retailerSlug: string;
-  retailerName: string;
-  rawTitle: string;
-  originalAmount: number;
-  originalCurrency: "USD" | "VES";
-  priceUsdBcv: number;
-  priceVes: number;
-  priceUsdParallel: number | null;
-  packageSize: number;
-  packageUnit: BaseUnit;
-  normalizedUnitPriceUsd: number;
-  inStock: boolean;
-  storeAvailabilityCount: number | null;
-  productUrl: string | null;
-  region: string;
-  observedAt: string;
-}
-
-export interface ProductPriceSummary {
-  id: number;
-  slug: string;
-  name: string;
-  category: BasketCategory;
-  baseUnit: BaseUnit;
-  basketMonthlyQty: number;
-  cheapestUnitUsdBcv: number | null;
-  averageUnitUsdBcv: number | null;
-  medianUnitUsdBcv: number | null;
-  cheapestUnitVes: number | null;
-  averageUnitVes: number | null;
-  cheapestUnitUsdParallel: number | null;
-  averageUnitUsdParallel: number | null;
-  cheapestRetailerName: string | null;
-  cheapestRetailerSlug: string | null;
-  spreadPct: number | null;
-  monthlyContributionUsdBcv: number | null;
-  inStockAny: boolean;
-  retailerCount: number;
-  retailers: RetailerPriceBreakdown[];
-}
-
-export interface CategorySubtotal {
-  category: BasketCategory;
-  coveredCount: number;
-  totalCount: number;
-  monthlyUsdBcv: number;
-}
-
-export interface BenchmarkReferenceInput {
-  source: string;
-  periodMonth: string;
-  basketCostUsd: number;
-  familySize: number;
-}
-
-export interface BasketIndexSummary {
-  estimatedMonthlyBasketUsdBcv: number;
-  estimatedMonthlyBasketAvgUsdBcv: number;
-  estimatedMonthlyBasketVes: number;
-  estimatedMonthlyBasketAvgVes: number;
-  estimatedMonthlyBasketUsdParallel: number | null;
-  estimatedMonthlyBasketAvgUsdParallel: number | null;
-  coveredProductsCount: number;
-  totalProductsCount: number;
-  coveragePct: number;
-  benchmarkDeltaUsd: number | null;
-  benchmarkDeltaPct: number | null;
-  benchmarkReferenceLabel: string | null;
-  categorySubtotals: CategorySubtotal[];
-  products: ProductPriceSummary[];
-}
+export type {
+  BasketIndexSummary,
+  BasketObservationInput,
+  BasketProductInput,
+  BenchmarkReferenceInput,
+  CategorySubtotal,
+  ProductPriceSummary,
+  RetailerOfferOption,
+  RetailerPriceBreakdown,
+};
 
 function round2(value: number): number {
   return Math.round(value * 100) / 100;
@@ -141,13 +57,18 @@ export function filterObservationsByRegion(
 
 export function computeProductSummary(
   product: BasketProductInput,
-  observations: BasketObservationInput[]
+  observations: BasketObservationInput[],
+  options?: { includeAlternatives?: boolean }
 ): ProductPriceSummary {
-  const matching = observations
-    .filter((obs) => obs.canonicalProductId === product.id)
-    .sort((a, b) => a.normalizedUnitPriceUsd - b.normalizedUnitPriceUsd);
+  const productObs = observations.filter(
+    (obs) => obs.canonicalProductId === product.id
+  );
+  const selectedOffers = selectRetailerOffers(
+    productObs,
+    options?.includeAlternatives ?? false
+  );
 
-  if (matching.length === 0) {
+  if (selectedOffers.length === 0) {
     return {
       ...product,
       cheapestUnitUsdBcv: null,
@@ -167,11 +88,14 @@ export function computeProductSummary(
     };
   }
 
-  const inStockList = matching.filter((obs) => obs.inStock);
-  const pricingPool = inStockList.length > 0 ? inStockList : matching;
+  const representatives = selectedOffers.map((offer) => offer.representative);
+  const inStockList = representatives.filter((obs) => obs.inStock);
+  const pricingPool = inStockList.length > 0 ? inStockList : representatives;
 
   const cheapest = pricingPool[0];
-  const unitPrices = pricingPool.map((obs) => obs.normalizedUnitPriceUsd);
+  const unitPrices = pricingPool
+    .map((obs) => obs.normalizedUnitPriceUsd)
+    .sort((a, b) => a - b);
   const minUnit = unitPrices[0];
   const maxUnit = unitPrices[unitPrices.length - 1];
   const averageUnitUsdBcv = round4(computeAverage(unitPrices));
@@ -212,25 +136,37 @@ export function computeProductSummary(
       cheapest.normalizedUnitPriceUsd * product.basketMonthlyQty
     ),
     inStockAny: inStockList.length > 0,
-    retailerCount: matching.length,
-    retailers: matching.map((obs) => ({
-      retailerSlug: obs.retailerSlug,
-      retailerName: obs.retailerName,
-      rawTitle: obs.rawTitle,
-      originalAmount: obs.originalAmount,
-      originalCurrency: obs.originalCurrency,
-      priceUsdBcv: obs.priceUsdBcv,
-      priceVes: obs.priceVes,
-      priceUsdParallel: obs.priceUsdParallel,
-      packageSize: obs.packageSize,
-      packageUnit: obs.packageUnit,
-      normalizedUnitPriceUsd: obs.normalizedUnitPriceUsd,
-      inStock: obs.inStock,
-      storeAvailabilityCount: obs.storeAvailabilityCount,
-      productUrl: obs.productUrl,
-      region: obs.region,
-      observedAt: obs.observedAt.toISOString(),
-    })),
+    retailerCount: selectedOffers.length,
+    retailers: selectedOffers.map((entry) => {
+      const obs = entry.representative;
+      const deltaVsCheapestPct =
+        minUnit > 0
+          ? round2(((obs.normalizedUnitPriceUsd - minUnit) / minUnit) * 100)
+          : null;
+      return {
+        retailerSlug: obs.retailerSlug,
+        retailerName: obs.retailerName,
+        externalSku: obs.externalSku ?? null,
+        rawTitle: obs.rawTitle,
+        originalAmount: obs.originalAmount,
+        originalCurrency: obs.originalCurrency,
+        priceUsdBcv: obs.priceUsdBcv,
+        priceVes: obs.priceVes,
+        priceUsdParallel: obs.priceUsdParallel,
+        packageSize: obs.packageSize,
+        packageUnit: obs.packageUnit,
+        normalizedUnitPriceUsd: obs.normalizedUnitPriceUsd,
+        inStock: obs.inStock,
+        matchConfidence: obs.matchConfidence ?? 1,
+        matchedSkuCount: entry.matchedSkuCount,
+        deltaVsCheapestPct,
+        alternatives: entry.alternatives,
+        storeAvailabilityCount: obs.storeAvailabilityCount,
+        productUrl: obs.productUrl,
+        region: obs.region,
+        observedAt: obs.observedAt.toISOString(),
+      };
+    }),
   };
 }
 

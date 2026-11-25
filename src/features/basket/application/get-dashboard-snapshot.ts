@@ -89,6 +89,8 @@ function mapObservationRow(
     retailerId: row.observation.retailerId,
     retailerSlug: row.retailer.slug,
     retailerName: row.retailer.name,
+    externalSku: row.observation.externalSku,
+    matchConfidence: Number(row.observation.matchConfidence),
     rawTitle: row.observation.rawTitle,
     originalAmount: Number(row.observation.originalAmount),
     originalCurrency: row.observation.originalCurrency as "USD" | "VES",
@@ -203,13 +205,14 @@ export async function getProductDetailSnapshot(
 
   const [rates, latestObs, historyRows] = await Promise.all([
     exchangeRateRepository.getLatestRatesSnapshot(),
-    priceRepository.getLatestObservations("all"),
+    priceRepository.getLatestObservationsForProduct(product.id, "all"),
     priceRepository.getProductHistory(product.id, 30),
   ]);
 
   const summary = computeProductSummary(
     product,
-    latestObs.map(mapObservationRow)
+    latestObs.map(mapObservationRow),
+    { includeAlternatives: true }
   );
 
   return {

@@ -10,6 +10,8 @@ import {
   type RetailerRow,
 } from "@/db/schema";
 
+const DEFAULT_FRESH_WINDOW_DAYS = 7;
+
 export interface LatestObservationJoined {
   observation: PriceObservationRow;
   retailer: RetailerRow;
@@ -20,6 +22,10 @@ export interface PriceRepositoryPort {
   getAllRetailers(): Promise<RetailerRow[]>;
   saveObservationsBatch(rows: PriceObservationInsert[]): Promise<number>;
   getLatestObservations(region?: string): Promise<LatestObservationJoined[]>;
+  getLatestObservationsForProduct(
+    canonicalProductId: number,
+    region?: string
+  ): Promise<LatestObservationJoined[]>;
   getProductHistory(
     canonicalProductId: number,
     days?: number
@@ -35,6 +41,30 @@ export interface PriceRepositoryPort {
     startedAt: Date;
     finishedAt: Date;
   }): Promise<IngestionRunRow>;
+}
+
+function deduplicateLatestBySku(
+  rows: LatestObservationJoined[],
+  region?: string
+): LatestObservationJoined[] {
+  const seen = new Set<string>();
+  const latest: LatestObservationJoined[] = [];
+
+  for (const row of rows) {
+    if (
+      region &&
+      region !== "all" &&
+      !row.observation.region.toLowerCase().includes(region.toLowerCase())
+    ) {
+      continue;
+    }
+    const key = `${row.observation.canonicalProductId}:${row.observation.retailerId}:${row.observation.externalSku}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    latest.push(row);
+  }
+
+  return latest;
 }
 
 export const priceRepository: PriceRepositoryPort = {
@@ -73,33 +103,70 @@ export const priceRepository: PriceRepositoryPort = {
   async getLatestObservations(
     region?: string
   ): Promise<LatestObservationJoined[]> {
-    const rows = await db
+    const since = new Date(
+      Date.now() - DEFAULT_FRESH_WINDOW_DAYS * 24 * 60 * 60 * 1000
+    );
+
+    let rows = await db
       .select({
         observation: priceObservations,
         retailer: retailers,
       })
       .from(priceObservations)
       .innerJoin(retailers, eq(priceObservations.retailerId, retailers.id))
+      .where(gte(priceObservations.observedAt, since))
       .orderBy(desc(priceObservations.observedAt));
 
-    const seen = new Set<string>();
-    const latest: LatestObservationJoined[] = [];
-
-    for (const row of rows) {
-      if (
-        region &&
-        region !== "all" &&
-        !row.observation.region.toLowerCase().includes(region.toLowerCase())
-      ) {
-        continue;
-      }
-      const key = `${row.observation.canonicalProductId}:${row.observation.retailerId}`;
-      if (seen.has(key)) continue;
-      seen.add(key);
-      latest.push(row);
+    if (rows.length === 0) {
+      rows = await db
+        .select({
+          observation: priceObservations,
+          retailer: retailers,
+        })
+        .from(priceObservations)
+        .innerJoin(retailers, eq(priceObservations.retailerId, retailers.id))
+        .orderBy(desc(priceObservations.observedAt));
     }
 
-    return latest;
+    return deduplicateLatestBySku(rows, region);
+  },
+
+  async getLatestObservationsForProduct(
+    canonicalProductId: number,
+    region?: string
+  ): Promise<LatestObservationJoined[]> {
+    const since = new Date(
+      Date.now() - DEFAULT_FRESH_WINDOW_DAYS * 24 * 60 * 60 * 1000
+    );
+
+    let rows = await db
+      .select({
+        observation: priceObservations,
+        retailer: retailers,
+      })
+      .from(priceObservations)
+      .innerJoin(retailers, eq(priceObservations.retailerId, retailers.id))
+      .where(
+        and(
+          eq(priceObservations.canonicalProductId, canonicalProductId),
+          gte(priceObservations.observedAt, since)
+        )
+      )
+      .orderBy(desc(priceObservations.observedAt));
+
+    if (rows.length === 0) {
+      rows = await db
+        .select({
+          observation: priceObservations,
+          retailer: retailers,
+        })
+        .from(priceObservations)
+        .innerJoin(retailers, eq(priceObservations.retailerId, retailers.id))
+        .where(eq(priceObservations.canonicalProductId, canonicalProductId))
+        .orderBy(desc(priceObservations.observedAt));
+    }
+
+    return deduplicateLatestBySku(rows, region);
   },
 
   async getProductHistory(

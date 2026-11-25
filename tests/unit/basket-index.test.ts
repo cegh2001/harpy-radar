@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   computeBasketIndex,
+  computeProductSummary,
   filterObservationsByRegion,
   type BasketObservationInput,
   type BasketProductInput,
@@ -101,5 +102,135 @@ describe("basket-index", () => {
     const caracasOnly = filterObservationsByRegion(OBSERVATIONS, "Caracas");
     expect(caracasOnly).toHaveLength(1);
     expect(caracasOnly[0].retailerSlug).toBe("farmatodo-ve");
+  });
+
+  it("selects deterministic representative SKU per chain and exposes alternatives only when requested", () => {
+    const arrozProduct: BasketProductInput = {
+      id: 3,
+      slug: "arroz-blanco",
+      name: "Arroz Blanco de Mesa",
+      category: "grains_flours",
+      baseUnit: "kg",
+      basketMonthlyQty: 6,
+    };
+
+    const multiSkuObs: BasketObservationInput[] = [
+      {
+        ...OBSERVATIONS[0],
+        canonicalProductId: 3,
+        retailerId: 7,
+        retailerSlug: "locatel-caracas",
+        retailerName: "Locatel",
+        externalSku: "sku-primor-1kg",
+        matchConfidence: 0.88,
+        rawTitle: "PRIMOR ARROZ TRADICIONAL 1KG",
+        originalAmount: 3000,
+        originalCurrency: "VES",
+        priceUsdBcv: 3.27,
+        priceVes: 3000,
+        normalizedUnitPriceUsd: 3.27,
+        inStock: true,
+        observedAt: new Date("2026-11-25T17:25:04Z"),
+      },
+      {
+        ...OBSERVATIONS[0],
+        canonicalProductId: 3,
+        retailerId: 7,
+        retailerSlug: "locatel-caracas",
+        retailerName: "Locatel",
+        externalSku: "sku-primor-900g",
+        matchConfidence: 0.86,
+        rawTitle: "PRIMOR ARROZ BLANCO PERLADO TIPO A 900 GR",
+        originalAmount: 1320,
+        originalCurrency: "VES",
+        priceUsdBcv: 1.44,
+        priceVes: 1320,
+        packageSize: 0.9,
+        normalizedUnitPriceUsd: 1.6,
+        inStock: true,
+        observedAt: new Date("2026-11-25T17:25:03Z"),
+      },
+      {
+        ...OBSERVATIONS[0],
+        canonicalProductId: 3,
+        retailerId: 7,
+        retailerSlug: "locatel-caracas",
+        retailerName: "Locatel",
+        externalSku: "sku-oos-cheap",
+        matchConfidence: 0.92,
+        rawTitle: "ARROZ ECONOMICO AGOTADO 1KG",
+        originalAmount: 800,
+        originalCurrency: "VES",
+        priceUsdBcv: 0.87,
+        priceVes: 800,
+        normalizedUnitPriceUsd: 0.87,
+        inStock: false,
+        observedAt: new Date("2026-11-25T17:25:05Z"),
+      },
+      {
+        ...OBSERVATIONS[1],
+        canonicalProductId: 3,
+        retailerId: 2,
+        retailerSlug: "riomarket-caracas",
+        retailerName: "Rio Supermarket",
+        externalSku: "sku-rio-inferred",
+        matchConfidence: 0.7,
+        rawTitle: "Arroz Sin Peso Explicito",
+        originalAmount: 0.9,
+        originalCurrency: "USD",
+        priceUsdBcv: 0.9,
+        priceVes: 828,
+        normalizedUnitPriceUsd: 0.9,
+        inStock: true,
+        observedAt: new Date("2026-11-25T16:02:30Z"),
+      },
+      {
+        ...OBSERVATIONS[1],
+        canonicalProductId: 3,
+        retailerId: 2,
+        retailerSlug: "riomarket-caracas",
+        retailerName: "Rio Supermarket",
+        externalSku: "sku-rio-masia",
+        matchConfidence: 0.88,
+        rawTitle: "Arroz Blanco Tipo 1 Premium Masía 1 Kg",
+        originalAmount: 0.97,
+        originalCurrency: "USD",
+        priceUsdBcv: 0.97,
+        priceVes: 892.4,
+        normalizedUnitPriceUsd: 0.97,
+        inStock: true,
+        observedAt: new Date("2026-11-25T16:02:29Z"),
+      },
+    ];
+
+    const compact = computeProductSummary(arrozProduct, multiSkuObs);
+    expect(compact.retailerCount).toBe(2);
+    expect(compact.cheapestRetailerSlug).toBe("riomarket-caracas");
+    expect(compact.cheapestUnitUsdBcv).toBe(0.97);
+    expect(compact.retailers[0].externalSku).toBe("sku-rio-masia");
+    expect(compact.retailers[0].matchedSkuCount).toBe(2);
+    expect(compact.retailers[0].deltaVsCheapestPct).toBe(0);
+    expect(compact.retailers[0].alternatives).toStrictEqual([]);
+
+    expect(compact.retailers[1].retailerSlug).toBe("locatel-caracas");
+    expect(compact.retailers[1].externalSku).toBe("sku-primor-900g");
+    expect(compact.retailers[1].normalizedUnitPriceUsd).toBe(1.6);
+    expect(compact.retailers[1].matchedSkuCount).toBe(3);
+    expect(compact.retailers[1].deltaVsCheapestPct).toBeCloseTo(64.95, 2);
+
+    const detailed = computeProductSummary(arrozProduct, multiSkuObs, {
+      includeAlternatives: true,
+    });
+    expect(detailed.retailers[0].alternatives).toHaveLength(1);
+    expect(detailed.retailers[0].alternatives[0].externalSku).toBe(
+      "sku-rio-inferred"
+    );
+    expect(detailed.retailers[1].alternatives).toHaveLength(2);
+    expect(detailed.retailers[1].alternatives[0].externalSku).toBe(
+      "sku-primor-1kg"
+    );
+    expect(detailed.retailers[1].alternatives[1].externalSku).toBe(
+      "sku-oos-cheap"
+    );
   });
 });
