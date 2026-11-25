@@ -61,7 +61,7 @@ export async function startScheduler(): Promise<SchedulerController> {
     schedule: env.BAHIA_CRON,
     jobName: "job:scrape-bahia",
     lockKey: "scrape-bahia",
-    timeoutMs: 120_000,
+    timeoutMs: 180_000,
     run: (signal) =>
       runScrapeRetailerJob("bahia-la-guaira", "job:scrape-bahia", signal),
   });
@@ -70,7 +70,7 @@ export async function startScheduler(): Promise<SchedulerController> {
     schedule: env.RIOMARKET_CRON,
     jobName: "job:scrape-riomarket",
     lockKey: "scrape-riomarket",
-    timeoutMs: 120_000,
+    timeoutMs: 180_000,
     run: (signal) =>
       runScrapeRetailerJob("riomarket-caracas", "job:scrape-riomarket", signal),
   });
@@ -79,7 +79,7 @@ export async function startScheduler(): Promise<SchedulerController> {
     schedule: env.FARMATODO_CRON,
     jobName: "job:scrape-farmatodo",
     lockKey: "scrape-farmatodo",
-    timeoutMs: 120_000,
+    timeoutMs: 180_000,
     run: (signal) =>
       runScrapeRetailerJob("farmatodo-ve", "job:scrape-farmatodo", signal),
   });
@@ -88,7 +88,7 @@ export async function startScheduler(): Promise<SchedulerController> {
     schedule: env.CENTRAL_MADEIRENSE_CRON,
     jobName: "job:scrape-central-madeirense",
     lockKey: "scrape-central-madeirense",
-    timeoutMs: 120_000,
+    timeoutMs: 180_000,
     run: (signal) =>
       runScrapeRetailerJob(
         "central-madeirense",
@@ -101,7 +101,7 @@ export async function startScheduler(): Promise<SchedulerController> {
     schedule: env.PUNTO_AL_MAYOR_CRON,
     jobName: "job:scrape-punto-al-mayor",
     lockKey: "scrape-punto-al-mayor",
-    timeoutMs: 120_000,
+    timeoutMs: 180_000,
     run: (signal) =>
       runScrapeRetailerJob(
         "puntoalmayor-la-guaira",
@@ -114,7 +114,7 @@ export async function startScheduler(): Promise<SchedulerController> {
     schedule: env.VIVA_CRON,
     jobName: "job:scrape-viva",
     lockKey: "scrape-viva",
-    timeoutMs: 120_000,
+    timeoutMs: 180_000,
     run: (signal) =>
       runScrapeRetailerJob("viva-la-guaira", "job:scrape-viva", signal),
   });
@@ -123,7 +123,7 @@ export async function startScheduler(): Promise<SchedulerController> {
     schedule: env.LOCATEL_CRON,
     jobName: "job:scrape-locatel",
     lockKey: "scrape-locatel",
-    timeoutMs: 120_000,
+    timeoutMs: 180_000,
     run: (signal) =>
       runScrapeRetailerJob("locatel-caracas", "job:scrape-locatel", signal),
   });

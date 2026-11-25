@@ -19,7 +19,7 @@ async function main() {
   const bahiaResult = await JobRunner.run({
     jobName: "job:scrape-bahia",
     lockKey: "scrape-bahia",
-    timeoutMs: 120_000,
+    timeoutMs: 180_000,
     run: (signal) =>
       runScrapeRetailerJob("bahia-la-guaira", "job:scrape-bahia", signal),
   });
@@ -27,7 +27,7 @@ async function main() {
   const riomarketResult = await JobRunner.run({
     jobName: "job:scrape-riomarket",
     lockKey: "scrape-riomarket",
-    timeoutMs: 120_000,
+    timeoutMs: 180_000,
     run: (signal) =>
       runScrapeRetailerJob("riomarket-caracas", "job:scrape-riomarket", signal),
   });
@@ -35,7 +35,7 @@ async function main() {
   const farmatodoResult = await JobRunner.run({
     jobName: "job:scrape-farmatodo",
     lockKey: "scrape-farmatodo",
-    timeoutMs: 120_000,
+    timeoutMs: 180_000,
     run: (signal) =>
       runScrapeRetailerJob("farmatodo-ve", "job:scrape-farmatodo", signal),
   });
@@ -43,7 +43,7 @@ async function main() {
   const centralMadeirenseResult = await JobRunner.run({
     jobName: "job:scrape-central-madeirense",
     lockKey: "scrape-central-madeirense",
-    timeoutMs: 120_000,
+    timeoutMs: 180_000,
     run: (signal) =>
       runScrapeRetailerJob(
         "central-madeirense",
@@ -55,7 +55,7 @@ async function main() {
   const puntoAlMayorResult = await JobRunner.run({
     jobName: "job:scrape-punto-al-mayor",
     lockKey: "scrape-punto-al-mayor",
-    timeoutMs: 120_000,
+    timeoutMs: 180_000,
     run: (signal) =>
       runScrapeRetailerJob(
         "puntoalmayor-la-guaira",
@@ -67,7 +67,7 @@ async function main() {
   const vivaResult = await JobRunner.run({
     jobName: "job:scrape-viva",
     lockKey: "scrape-viva",
-    timeoutMs: 120_000,
+    timeoutMs: 180_000,
     run: (signal) =>
       runScrapeRetailerJob("viva-la-guaira", "job:scrape-viva", signal),
   });
@@ -75,7 +75,7 @@ async function main() {
   const locatelResult = await JobRunner.run({
     jobName: "job:scrape-locatel",
     lockKey: "scrape-locatel",
-    timeoutMs: 120_000,
+    timeoutMs: 180_000,
     run: (signal) =>
       runScrapeRetailerJob("locatel-caracas", "job:scrape-locatel", signal),
   });
