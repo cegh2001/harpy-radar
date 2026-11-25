@@ -11,7 +11,7 @@ export interface ReferenceBenchmarkSeed {
 
 /**
  * Curated institutional reference benchmarks for historical contrast against
- * Harpy Radar's curated 24-item retail basket.
+ * Harpy Radar's curated retail basket.
  */
 export const REFERENCE_BENCHMARKS: ReferenceBenchmarkSeed[] = [
   {

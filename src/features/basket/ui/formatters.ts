@@ -9,7 +9,8 @@ export const CATEGORY_LABELS: Record<BasketCategory, string> = {
   dairy_eggs: "Lácteos y huevos",
   proteins: "Proteínas",
   pantry: "Despensa",
-  hygiene: "Higiene",
+  personal_care: "Higiene personal",
+  household_cleaning: "Limpieza del hogar",
 };
 
 export const RETAILER_STATUS_LABELS: Record<string, string> = {

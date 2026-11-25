@@ -12,12 +12,19 @@ export interface CatalogProductRecord extends CanonicalBasketItem {
   active: boolean;
 }
 
+function normalizeCategory(raw: string): BasketCategory {
+  if (raw === "hygiene") {
+    return "personal_care";
+  }
+  return raw as BasketCategory;
+}
+
 function mapRowToRecord(row: CanonicalProductRow): CatalogProductRecord {
   return {
     id: row.id,
     slug: row.slug,
     name: row.name,
-    category: row.category as BasketCategory,
+    category: normalizeCategory(row.category),
     baseUnit: row.baseUnit as BaseUnit,
     basketMonthlyQty: Number(row.basketMonthlyQty),
     searchTerms: row.searchTerms,
