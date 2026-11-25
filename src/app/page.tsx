@@ -17,6 +17,9 @@ function buildFallbackSnapshot() {
     category: item.category,
     baseUnit: item.baseUnit,
     basketMonthlyQty: item.basketMonthlyQty,
+    displayUnitLabel: item.displayUnitLabel,
+    displayUnitPluralLabel: item.displayUnitPluralLabel,
+    displayUnitSizeInBase: item.displayUnitSizeInBase,
   }));
 
   return {

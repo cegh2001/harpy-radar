@@ -37,6 +37,9 @@ function mapRowToRecord(row: CanonicalProductRow): CatalogProductRecord {
     minPackageSize: staticSpec?.minPackageSize,
     maxPackageSize: staticSpec?.maxPackageSize,
     requireExplicitSize: staticSpec?.requireExplicitSize,
+    displayUnitLabel: staticSpec?.displayUnitLabel,
+    displayUnitPluralLabel: staticSpec?.displayUnitPluralLabel,
+    displayUnitSizeInBase: staticSpec?.displayUnitSizeInBase,
     active: row.active,
   };
 }

@@ -23,6 +23,7 @@ export default defineConfig({
       "tests/unit/vtex-catalog-connector.test.ts",
       "tests/unit/ingest-retailer-prices.test.ts",
       "tests/unit/basket-index.test.ts",
+      "tests/unit/product-comparison-helpers.test.ts",
       "tests/unit/dashboard-tab.test.ts",
       "tests/unit/job-runner.test.ts",
     ],

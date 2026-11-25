@@ -2,7 +2,11 @@
 
 import { ExternalLink } from "lucide-react";
 import type { RetailerOfferOption } from "../domain/basket-index";
-import { formatRelativeIso, type CurrencyDisplayMode } from "./formatters";
+import {
+  formatPackageSizeLabel,
+  formatRelativeIso,
+  type CurrencyDisplayMode,
+} from "./formatters";
 import {
   formatComparisonPackageValue,
   formatComparisonUnitValue,
@@ -12,12 +16,16 @@ interface ProductAlternativesRowProps {
   retailerName: string;
   alternatives: RetailerOfferOption[];
   currencyMode: CurrencyDisplayMode;
+  displayScale?: number;
+  displayUnitLabel?: string;
 }
 
 export function ProductAlternativesRow({
   retailerName,
   alternatives,
   currencyMode,
+  displayScale = 1,
+  displayUnitLabel,
 }: ProductAlternativesRowProps) {
   return (
     <tr className="bg-slate-950/70">
@@ -52,7 +60,7 @@ export function ProductAlternativesRow({
                   {alt.inStock ? "Disponible" : "Agotado"}
                 </span>
                 <span>
-                  {alt.packageSize} {alt.packageUnit}
+                  {formatPackageSizeLabel(alt.packageSize, alt.packageUnit)}
                 </span>
                 <span>
                   {formatComparisonPackageValue(
@@ -69,9 +77,10 @@ export function ProductAlternativesRow({
                     alt.priceUsdParallel !== null
                       ? alt.priceUsdParallel / alt.packageSize
                       : null,
-                    currencyMode
+                    currencyMode,
+                    displayScale
                   )}{" "}
-                  / {alt.packageUnit}
+                  / {displayUnitLabel ?? alt.packageUnit}
                 </span>
                 <span className="text-slate-500">
                   {formatRelativeIso(alt.observedAt)}

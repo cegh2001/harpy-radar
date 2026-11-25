@@ -29,6 +29,9 @@ export interface BasketProductInput {
   category: BasketCategory;
   baseUnit: BaseUnit;
   basketMonthlyQty: number;
+  displayUnitLabel?: string;
+  displayUnitPluralLabel?: string;
+  displayUnitSizeInBase?: number;
 }
 
 export interface BasketObservationInput {
@@ -85,6 +88,9 @@ export interface ProductPriceSummary {
   category: BasketCategory;
   baseUnit: BaseUnit;
   basketMonthlyQty: number;
+  displayUnitLabel?: string;
+  displayUnitPluralLabel?: string;
+  displayUnitSizeInBase?: number;
   cheapestUnitUsdBcv: number | null;
   averageUnitUsdBcv: number | null;
   medianUnitUsdBcv: number | null;

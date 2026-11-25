@@ -28,4 +28,7 @@ export interface CanonicalBasketItem {
   minPackageSize?: number;
   maxPackageSize?: number;
   requireExplicitSize?: boolean;
+  displayUnitLabel?: string;
+  displayUnitPluralLabel?: string;
+  displayUnitSizeInBase?: number;
 }

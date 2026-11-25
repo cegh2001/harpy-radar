@@ -106,7 +106,7 @@ export function selectRetailerOffers(
       representative,
       matchedSkuCount: uniqueSkus.length,
       alternatives: includeAlternatives
-        ? uniqueSkus.slice(1, 26).map(toOfferOption)
+        ? uniqueSkus.slice(1).map(toOfferOption)
         : [],
     });
   }

@@ -238,6 +238,9 @@ export const BASKET_PROTEIN_ITEMS: CanonicalBasketItem[] = [
     expectedMinUnitUsd: 4.5,
     expectedMaxUnitUsd: 24.0,
     maxPackageSize: 0.8,
+    displayUnitLabel: "lata",
+    displayUnitPluralLabel: "latas",
+    displayUnitSizeInBase: 0.17,
   },
   {
     slug: "sardinas-lata",
@@ -262,5 +265,8 @@ export const BASKET_PROTEIN_ITEMS: CanonicalBasketItem[] = [
     expectedMinUnitUsd: 2.0,
     expectedMaxUnitUsd: 12.0,
     maxPackageSize: 0.6,
+    displayUnitLabel: "lata",
+    displayUnitPluralLabel: "latas",
+    displayUnitSizeInBase: 0.17,
   },
 ];

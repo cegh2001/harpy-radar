@@ -1,6 +1,17 @@
-import type { BasketCategory } from "@/features/catalog/domain/canonical-basket";
+import type {
+  BaseUnit,
+  BasketCategory,
+} from "@/features/catalog/domain/canonical-basket";
 
 export type CurrencyDisplayMode = "usd_bcv" | "ves" | "usd_parallel";
+
+export interface DisplayUnitMeta {
+  scale: number;
+  unitLabel: string;
+  referenceLabel: string;
+  monthlyQtyLabel: string;
+  isScaledDisplay: boolean;
+}
 
 export const CATEGORY_LABELS: Record<BasketCategory, string> = {
   grains_flours: "Granos y harinas",
@@ -73,4 +84,55 @@ export function formatRelativeIso(iso: string | null): string {
     hour: "2-digit",
     minute: "2-digit",
   });
+}
+
+export function formatPackageSizeLabel(size: number, unit: BaseUnit): string {
+  if (unit === "kg") {
+    if (size < 1) return `${Math.round(size * 1000)} g`;
+    return `${Number(size.toFixed(2))} kg`;
+  }
+  if (unit === "l") {
+    if (size < 1) return `${Math.round(size * 1000)} ml`;
+    return `${Number(size.toFixed(2))} L`;
+  }
+  return `${Number(size.toFixed(2))} und`;
+}
+
+export function getDisplayUnitMeta(product: {
+  baseUnit: BaseUnit;
+  basketMonthlyQty: number;
+  displayUnitLabel?: string;
+  displayUnitPluralLabel?: string;
+  displayUnitSizeInBase?: number;
+}): DisplayUnitMeta {
+  if (
+    product.displayUnitSizeInBase &&
+    product.displayUnitSizeInBase > 0 &&
+    product.displayUnitLabel
+  ) {
+    const scale = product.displayUnitSizeInBase;
+    const unitLabel = product.displayUnitLabel;
+    const referenceLabel = `${unitLabel} (${formatPackageSizeLabel(scale, product.baseUnit)})`;
+    const monthlyCount = Math.max(
+      1,
+      Math.round(product.basketMonthlyQty / scale)
+    );
+    const plural = product.displayUnitPluralLabel ?? unitLabel;
+    const monthlyQtyLabel = `${monthlyCount} ${monthlyCount === 1 ? unitLabel : plural}`;
+    return {
+      scale,
+      unitLabel,
+      referenceLabel,
+      monthlyQtyLabel,
+      isScaledDisplay: true,
+    };
+  }
+
+  return {
+    scale: 1,
+    unitLabel: product.baseUnit,
+    referenceLabel: product.baseUnit,
+    monthlyQtyLabel: `${product.basketMonthlyQty} ${product.baseUnit}`,
+    isScaledDisplay: false,
+  };
 }
