@@ -12,7 +12,6 @@ Near-zero-cost price and availability monitor for basic basket products in Venez
   - **Bahía Supermarket (La Guaira)**: Stellar Webstore JSON search (`store.bahiasupermarket.com`).
   - **Rio Supermarket (Caracas)**: Next.js SSR product catalog (`www.riomarket.com`).
   - **Farmatodo Venezuela (La Guaira / Caracas)**: Public Algolia catalog index (`products-venezuela`).
-  - **Excelsior Gama (Caracas, beta)**: SAP Commerce OCC (`api.gamaenlinea.com`), disabled by default when upstream OCC search is unstable.
   - **Central Madeirense (Maiquetía / La Guaira)**: WooCommerce Store API (`tucentralonline.com/Maiquetia-53`).
   - **Punto al Mayor (La Guaira)**: Shopify JSON catalog (`puntoalmayor.com`, retail `Detal` variant filter).
   - **Viva Supercentro (La Guaira)**: CS-Cart storefront (`vivaenlinea.com`, La Guaira branch session).

@@ -14,7 +14,6 @@ export const KNOWN_JOBS = [
   "job:scrape-punto-al-mayor",
   "job:scrape-viva",
   "job:scrape-locatel",
-  "job:scrape-gama",
 ] as const;
 
 export interface SchedulerController {
@@ -111,15 +110,6 @@ export async function startScheduler(): Promise<SchedulerController> {
       ),
   });
 
-  const gamaJob = scheduleLockedJob({
-    schedule: env.GAMA_CRON,
-    jobName: "job:scrape-gama",
-    lockKey: "scrape-gama",
-    timeoutMs: 120_000,
-    run: (signal) =>
-      runScrapeRetailerJob("excelsior-gama", "job:scrape-gama", signal),
-  });
-
   const vivaJob = scheduleLockedJob({
     schedule: env.VIVA_CRON,
     jobName: "job:scrape-viva",
@@ -148,7 +138,6 @@ export async function startScheduler(): Promise<SchedulerController> {
       puntoAlMayorJob.stop();
       vivaJob.stop();
       locatelJob.stop();
-      gamaJob.stop();
     },
   };
 }

@@ -137,7 +137,6 @@ if (process.env.RELEASE_VERIFY_GUARD === "true") {
     SOURCE_PUNTO_AL_MAYOR_ENABLED: "false",
     SOURCE_VIVA_ENABLED: "false",
     SOURCE_LOCATEL_ENABLED: "false",
-    SOURCE_GAMA_ENABLED: "false",
   });
 
   const guardedEnvironment = {

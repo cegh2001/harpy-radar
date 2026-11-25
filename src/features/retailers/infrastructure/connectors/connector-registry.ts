@@ -2,7 +2,6 @@ import { env } from "@/shared/config/env";
 import type { RetailerConnector } from "../../domain/retailer-connector";
 import { CsCartStoreConnector } from "./cscart-store-connector";
 import { FarmatodoAlgoliaConnector } from "./farmatodo-algolia-connector";
-import { GamaOccConnector } from "./gama-occ-connector";
 import { RioMarketConnector } from "./riomarket-connector";
 import { ShopifyCatalogConnector } from "./shopify-catalog-connector";
 import { StellarWebstoreConnector } from "./stellar-webstore-connector";
@@ -72,13 +71,6 @@ export function createRetailerConnector(
         baseUrl: "https://www.locatel.com.ve",
         region: "Caracas",
         currency: "VES",
-      });
-    case "excelsior-gama":
-      if (!env.SOURCE_GAMA_ENABLED) return null;
-      return new GamaOccConnector({
-        retailerSlug: "excelsior-gama",
-        warehouseCode: env.GAMA_WAREHOUSE_CODE,
-        region: "Caracas",
       });
     default:
       return null;

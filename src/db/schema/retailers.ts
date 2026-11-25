@@ -11,7 +11,7 @@ export const retailers = pgTable("retailers", {
   id: serial("id").primaryKey(),
   slug: text("slug").notNull().unique(),
   name: text("name").notNull(),
-  adapterKey: text("adapter_key").notNull(), // 'stellar_webstore' | 'farmatodo_algolia' | 'gama_occ' | 'manual_only'
+  adapterKey: text("adapter_key").notNull(), // 'stellar_webstore' | 'instaleap_ssr' | 'farmatodo_algolia' | 'woocommerce_store' | 'shopify_catalog' | 'cscart_store' | 'vtex_catalog'
   baseUrl: text("base_url").notNull(),
   defaultCurrency: text("default_currency").notNull(), // 'USD' | 'VES'
   primaryRegion: text("primary_region").notNull(),

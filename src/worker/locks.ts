@@ -5,7 +5,6 @@ export const JOB_LOCK_IDS: Record<string, number> = {
   "sync-rates": 988654321,
   "scrape-bahia": 988654322,
   "scrape-farmatodo": 988654323,
-  "scrape-gama": 988654324,
   "scrape-riomarket": 988654325,
   "scrape-central-madeirense": 988654326,
   "scrape-punto-al-mayor": 988654327,

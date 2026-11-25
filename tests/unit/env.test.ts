@@ -17,12 +17,10 @@ describe("parseEnv", () => {
     expect(parsed.SOURCE_PUNTO_AL_MAYOR_ENABLED).toBe(true);
     expect(parsed.SOURCE_VIVA_ENABLED).toBe(true);
     expect(parsed.SOURCE_LOCATEL_ENABLED).toBe(true);
-    expect(parsed.SOURCE_GAMA_ENABLED).toBe(false);
     expect(parsed.CENTRAL_MADEIRENSE_BASE_URL).toBe(
       "https://tucentralonline.com/Maiquetia-53"
     );
     expect(parsed.SCRAPE_CONCURRENCY).toBe(2);
-    expect(parsed.GAMA_WAREHOUSE_CODE).toBe("S007");
   });
 
   it("parses boolean string flags strictly", () => {
@@ -31,14 +29,14 @@ describe("parseEnv", () => {
       DATABASE_URL: "postgres://user:pass@db.internal:5432/harpy",
       SOURCE_BAHIA_ENABLED: "false",
       SOURCE_FARMATODO_ENABLED: "false",
-      SOURCE_GAMA_ENABLED: "true",
+      SOURCE_VIVA_ENABLED: "false",
       SCRAPE_CONCURRENCY: "4",
     });
 
     expect(parsed.NODE_ENV).toBe("production");
     expect(parsed.SOURCE_BAHIA_ENABLED).toBe(false);
     expect(parsed.SOURCE_FARMATODO_ENABLED).toBe(false);
-    expect(parsed.SOURCE_GAMA_ENABLED).toBe(true);
+    expect(parsed.SOURCE_VIVA_ENABLED).toBe(false);
     expect(parsed.SCRAPE_CONCURRENCY).toBe(4);
   });
 

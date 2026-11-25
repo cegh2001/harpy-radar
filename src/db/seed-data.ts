@@ -42,17 +42,6 @@ export const RETAILER_SEEDS = [
     configJson: { platform: "Algolia Catalog", city: "La Guaira / Caracas" },
   },
   {
-    slug: "excelsior-gama",
-    name: "Excelsior Gama",
-    adapterKey: "gama_occ",
-    baseUrl: "https://api.gamaenlinea.com",
-    defaultCurrency: "VES",
-    primaryRegion: "Caracas",
-    status: "beta",
-    enabled: false,
-    configJson: { platform: "SAP Commerce OCC", defaultWarehouse: "S007" },
-  },
-  {
     slug: "central-madeirense",
     name: "Central Madeirense (Maiquetía)",
     adapterKey: "woocommerce_store",

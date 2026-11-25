@@ -17,8 +17,12 @@ ENV NEXT_TELEMETRY_DISABLED=1
 RUN DATABASE_URL=postgres://verification:verification_dummy_only@127.0.0.1:1/harpy_radar_unit_test \
 	APP_TIMEZONE=America/Caracas \
 	SOURCE_BAHIA_ENABLED=false \
+	SOURCE_RIOMARKET_ENABLED=false \
 	SOURCE_FARMATODO_ENABLED=false \
-	SOURCE_GAMA_ENABLED=false \
+	SOURCE_CENTRAL_MADEIRENSE_ENABLED=false \
+	SOURCE_PUNTO_AL_MAYOR_ENABLED=false \
+	SOURCE_VIVA_ENABLED=false \
+	SOURCE_LOCATEL_ENABLED=false \
 	RELEASE_VERIFY_GUARD=true \
 	RELEASE_VERIFY_STEP=build \
 	NODE_OPTIONS="--import=file:///app/scripts/verify-release.mjs" \

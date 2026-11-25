@@ -16,7 +16,6 @@ export default defineConfig({
       "tests/unit/product-matcher.test.ts",
       "tests/unit/stellar-webstore-connector.test.ts",
       "tests/unit/farmatodo-algolia-connector.test.ts",
-      "tests/unit/gama-occ-connector.test.ts",
       "tests/unit/riomarket-connector.test.ts",
       "tests/unit/woocommerce-store-connector.test.ts",
       "tests/unit/shopify-catalog-connector.test.ts",
@@ -40,7 +39,6 @@ export default defineConfig({
       SOURCE_FARMATODO_ENABLED: "false",
       SOURCE_VIVA_ENABLED: "false",
       SOURCE_LOCATEL_ENABLED: "false",
-      SOURCE_GAMA_ENABLED: "false",
     },
   },
 });

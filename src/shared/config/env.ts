@@ -35,7 +35,6 @@ export const envSchema = z.object({
   PUNTO_AL_MAYOR_CRON: z.string().min(1).default("0 42 */4 * * *"),
   VIVA_CRON: z.string().min(1).default("0 48 */4 * * *"),
   LOCATEL_CRON: z.string().min(1).default("0 54 */4 * * *"),
-  GAMA_CRON: z.string().min(1).default("0 35 */4 * * *"),
   SCRAPE_CONCURRENCY: z.coerce.number().int().positive().max(8).default(2),
   SCRAPE_DELAY_MS: z.coerce.number().int().nonnegative().default(400),
   SOURCE_BAHIA_ENABLED: booleanFlagSchema(true),
@@ -45,7 +44,6 @@ export const envSchema = z.object({
   SOURCE_PUNTO_AL_MAYOR_ENABLED: booleanFlagSchema(true),
   SOURCE_VIVA_ENABLED: booleanFlagSchema(true),
   SOURCE_LOCATEL_ENABLED: booleanFlagSchema(true),
-  SOURCE_GAMA_ENABLED: booleanFlagSchema(false),
   CENTRAL_MADEIRENSE_BASE_URL: z
     .string()
     .url()
@@ -56,7 +54,6 @@ export const envSchema = z.object({
     .min(1)
     .default("869a91e98550dd668b8b1dc04bca9011"),
   FARMATODO_ALGOLIA_INDEX: z.string().min(1).default("products-venezuela"),
-  GAMA_WAREHOUSE_CODE: z.string().min(1).default("S007"),
   BCV_CA_CERT: z.string().optional(),
   BCV_CA_BUNDLE: z.string().optional(),
 });

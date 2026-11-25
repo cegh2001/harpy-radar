@@ -80,14 +80,6 @@ async function main() {
       runScrapeRetailerJob("locatel-caracas", "job:scrape-locatel", signal),
   });
 
-  const gamaResult = await JobRunner.run({
-    jobName: "job:scrape-gama",
-    lockKey: "scrape-gama",
-    timeoutMs: 120_000,
-    run: (signal) =>
-      runScrapeRetailerJob("excelsior-gama", "job:scrape-gama", signal),
-  });
-
   console.log(
     JSON.stringify(
       {
@@ -99,7 +91,6 @@ async function main() {
         puntoAlMayor: puntoAlMayorResult,
         viva: vivaResult,
         locatel: locatelResult,
-        gama: gamaResult,
       },
       null,
       2
