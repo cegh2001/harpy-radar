@@ -42,6 +42,8 @@ export const JOB_STATUS_LABELS: Record<string, string> = {
 
 export const JOB_DISPLAY_NAMES: Record<string, string> = {
   "job:sync-rates": "Sincronización de tasas",
+  "job:sync-rates-official": "Tasa oficial BCV",
+  "job:sync-rates-parallel": "Tasa paralela",
   "job:scrape-bahia": "Catálogo Bahía Supermarket",
   "job:scrape-riomarket": "Catálogo Rio Supermarket",
   "job:scrape-farmatodo": "Catálogo Farmatodo",

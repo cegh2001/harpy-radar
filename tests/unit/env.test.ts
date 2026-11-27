@@ -9,7 +9,13 @@ describe("parseEnv", () => {
     expect(parsed.DATABASE_URL).toBe(
       "postgres://postgres:postgres@localhost:5433/harpy_radar"
     );
+    expect(parsed.DB_POOL_MAX).toBeUndefined();
+    expect(parsed.DATABASE_SSL).toBe("auto");
     expect(parsed.APP_TIMEZONE).toBe("America/Caracas");
+    expect(parsed.RATE_OFFICIAL_SYNC_CRON).toBe("0 30 17,19 * * 1-5");
+    expect(parsed.RATE_PARALLEL_SYNC_CRON).toBe("0 0 9,13,17 * * *");
+    expect(parsed.BAHIA_CRON).toBe("0 30 6 * * *");
+    expect(parsed.LOCATEL_CRON).toBe("0 0 7 * * *");
     expect(parsed.SOURCE_BAHIA_ENABLED).toBe(true);
     expect(parsed.SOURCE_RIOMARKET_ENABLED).toBe(true);
     expect(parsed.SOURCE_FARMATODO_ENABLED).toBe(true);
@@ -27,6 +33,8 @@ describe("parseEnv", () => {
     const parsed = parseEnv({
       NODE_ENV: "production",
       DATABASE_URL: "postgres://user:pass@db.internal:5432/harpy",
+      DB_POOL_MAX: "4",
+      DATABASE_SSL: "require",
       SOURCE_BAHIA_ENABLED: "false",
       SOURCE_FARMATODO_ENABLED: "false",
       SOURCE_VIVA_ENABLED: "false",
@@ -34,6 +42,8 @@ describe("parseEnv", () => {
     });
 
     expect(parsed.NODE_ENV).toBe("production");
+    expect(parsed.DB_POOL_MAX).toBe(4);
+    expect(parsed.DATABASE_SSL).toBe("require");
     expect(parsed.SOURCE_BAHIA_ENABLED).toBe(false);
     expect(parsed.SOURCE_FARMATODO_ENABLED).toBe(false);
     expect(parsed.SOURCE_VIVA_ENABLED).toBe(false);

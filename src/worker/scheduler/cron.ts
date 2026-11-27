@@ -1,19 +1,18 @@
 import { env } from "@/shared/config/env";
 import { exchangeRateRepository } from "@/features/exchange-rates/infrastructure/exchange-rate-repository";
 import { recordJobHeartbeat } from "@/features/worker/infrastructure/heartbeat-service";
+import { RETAILER_JOB_SPECS } from "../jobs/retailer-jobs";
 import { runScrapeRetailerJob } from "../jobs/scrape-retailer-job";
-import { runSyncRatesJob } from "../jobs/sync-rates-job";
+import {
+  runSyncOfficialRatesJob,
+  runSyncParallelRatesJob,
+} from "../jobs/sync-rates-job";
 import { JobRunner, scheduleLockedJob } from "./job-runner";
 
 export const KNOWN_JOBS = [
-  "job:sync-rates",
-  "job:scrape-bahia",
-  "job:scrape-riomarket",
-  "job:scrape-farmatodo",
-  "job:scrape-central-madeirense",
-  "job:scrape-punto-al-mayor",
-  "job:scrape-viva",
-  "job:scrape-locatel",
+  "job:sync-rates-official",
+  "job:sync-rates-parallel",
+  ...RETAILER_JOB_SPECS.map((spec) => spec.jobName),
 ] as const;
 
 export interface SchedulerController {
@@ -36,108 +35,63 @@ export async function startScheduler(): Promise<SchedulerController> {
     )
   );
 
-  // Cold-start FX sync when database has no rates yet
+  // Cold-start FX sync when database has no official or parallel rates yet
   const latestRates = await exchangeRateRepository.getLatestRatesSnapshot();
   if (!latestRates.official) {
     await JobRunner.run({
-      jobName: "job:sync-rates",
-      lockKey: "sync-rates",
+      jobName: "job:sync-rates-official",
+      lockKey: "sync-rates-official",
       timeoutMs: 45_000,
-      run: runSyncRatesJob,
+      run: runSyncOfficialRatesJob,
     }).catch((err) => {
-      console.error("Cold-start FX sync failed:", err);
+      console.error("Cold-start official FX sync failed:", err);
     });
   }
 
-  const rateSyncJob = scheduleLockedJob({
-    schedule: env.RATE_SYNC_CRON,
-    jobName: "job:sync-rates",
-    lockKey: "sync-rates",
+  if (!latestRates.parallel) {
+    await JobRunner.run({
+      jobName: "job:sync-rates-parallel",
+      lockKey: "sync-rates-parallel",
+      timeoutMs: 45_000,
+      run: runSyncParallelRatesJob,
+    }).catch((err) => {
+      console.error("Cold-start parallel FX sync failed:", err);
+    });
+  }
+
+  const rateOfficialJob = scheduleLockedJob({
+    schedule: env.RATE_OFFICIAL_SYNC_CRON,
+    jobName: "job:sync-rates-official",
+    lockKey: "sync-rates-official",
     timeoutMs: 45_000,
-    run: runSyncRatesJob,
+    run: runSyncOfficialRatesJob,
   });
 
-  const bahiaJob = scheduleLockedJob({
-    schedule: env.BAHIA_CRON,
-    jobName: "job:scrape-bahia",
-    lockKey: "scrape-bahia",
-    timeoutMs: 180_000,
-    run: (signal) =>
-      runScrapeRetailerJob("bahia-la-guaira", "job:scrape-bahia", signal),
+  const rateParallelJob = scheduleLockedJob({
+    schedule: env.RATE_PARALLEL_SYNC_CRON,
+    jobName: "job:sync-rates-parallel",
+    lockKey: "sync-rates-parallel",
+    timeoutMs: 45_000,
+    run: runSyncParallelRatesJob,
   });
 
-  const riomarketJob = scheduleLockedJob({
-    schedule: env.RIOMARKET_CRON,
-    jobName: "job:scrape-riomarket",
-    lockKey: "scrape-riomarket",
-    timeoutMs: 180_000,
-    run: (signal) =>
-      runScrapeRetailerJob("riomarket-caracas", "job:scrape-riomarket", signal),
-  });
-
-  const farmatodoJob = scheduleLockedJob({
-    schedule: env.FARMATODO_CRON,
-    jobName: "job:scrape-farmatodo",
-    lockKey: "scrape-farmatodo",
-    timeoutMs: 180_000,
-    run: (signal) =>
-      runScrapeRetailerJob("farmatodo-ve", "job:scrape-farmatodo", signal),
-  });
-
-  const centralMadeirenseJob = scheduleLockedJob({
-    schedule: env.CENTRAL_MADEIRENSE_CRON,
-    jobName: "job:scrape-central-madeirense",
-    lockKey: "scrape-central-madeirense",
-    timeoutMs: 180_000,
-    run: (signal) =>
-      runScrapeRetailerJob(
-        "central-madeirense",
-        "job:scrape-central-madeirense",
-        signal
-      ),
-  });
-
-  const puntoAlMayorJob = scheduleLockedJob({
-    schedule: env.PUNTO_AL_MAYOR_CRON,
-    jobName: "job:scrape-punto-al-mayor",
-    lockKey: "scrape-punto-al-mayor",
-    timeoutMs: 180_000,
-    run: (signal) =>
-      runScrapeRetailerJob(
-        "puntoalmayor-la-guaira",
-        "job:scrape-punto-al-mayor",
-        signal
-      ),
-  });
-
-  const vivaJob = scheduleLockedJob({
-    schedule: env.VIVA_CRON,
-    jobName: "job:scrape-viva",
-    lockKey: "scrape-viva",
-    timeoutMs: 180_000,
-    run: (signal) =>
-      runScrapeRetailerJob("viva-la-guaira", "job:scrape-viva", signal),
-  });
-
-  const locatelJob = scheduleLockedJob({
-    schedule: env.LOCATEL_CRON,
-    jobName: "job:scrape-locatel",
-    lockKey: "scrape-locatel",
-    timeoutMs: 180_000,
-    run: (signal) =>
-      runScrapeRetailerJob("locatel-caracas", "job:scrape-locatel", signal),
-  });
+  const retailerJobs = RETAILER_JOB_SPECS.map((spec) =>
+    scheduleLockedJob({
+      schedule: env[spec.cronEnvKey],
+      jobName: spec.jobName,
+      lockKey: spec.lockKey,
+      timeoutMs: spec.timeoutMs,
+      run: (signal) => runScrapeRetailerJob(spec.slug, spec.jobName, signal),
+    })
+  );
 
   return {
     stop: () => {
-      rateSyncJob.stop();
-      bahiaJob.stop();
-      riomarketJob.stop();
-      farmatodoJob.stop();
-      centralMadeirenseJob.stop();
-      puntoAlMayorJob.stop();
-      vivaJob.stop();
-      locatelJob.stop();
+      rateOfficialJob.stop();
+      rateParallelJob.stop();
+      for (const job of retailerJobs) {
+        job.stop();
+      }
     },
   };
 }

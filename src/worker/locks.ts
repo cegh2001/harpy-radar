@@ -3,6 +3,8 @@ import type { PoolClient } from "pg";
 
 export const JOB_LOCK_IDS: Record<string, number> = {
   "sync-rates": 988654321,
+  "sync-rates-official": 988654330,
+  "sync-rates-parallel": 988654331,
   "scrape-bahia": 988654322,
   "scrape-farmatodo": 988654323,
   "scrape-riomarket": 988654325,

@@ -10,8 +10,10 @@ export default defineConfig({
     environment: "node",
     include: [
       "tests/unit/env.test.ts",
+      "tests/unit/db-pool-config.test.ts",
       "tests/unit/caracas-date.test.ts",
       "tests/unit/bcv-parser.test.ts",
+      "tests/unit/sync-exchange-rates.test.ts",
       "tests/unit/unit-normalizer.test.ts",
       "tests/unit/product-matcher.test.ts",
       "tests/unit/stellar-webstore-connector.test.ts",
@@ -26,6 +28,7 @@ export default defineConfig({
       "tests/unit/product-comparison-helpers.test.ts",
       "tests/unit/dashboard-tab.test.ts",
       "tests/unit/job-runner.test.ts",
+      "tests/unit/run-once-args.test.ts",
     ],
     globalSetup: [],
     setupFiles: [],
