@@ -1,0 +1,56 @@
+name: Database Migrate & Seed
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - "src/db/migrations/**"
+      - "src/db/seed-data.ts"
+      - "src/features/catalog/domain/**"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: harpy-radar-db-bootstrap
+  cancel-in-progress: false
+
+jobs:
+  db-bootstrap:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      NODE_ENV: production
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      DATABASE_SSL: auto
+      DB_POOL_MAX: "2"
+      APP_TIMEZONE: America/Caracas
+    steps:
+      - name: Verify required DATABASE_URL secret
+        run: |
+          if [ -z "$DATABASE_URL" ]; then
+            echo "DATABASE_URL repository secret is not configured." >&2
+            exit 1
+          fi
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 12
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Apply migrations and seed database
+        run: pnpm db:migrate && pnpm db:seed

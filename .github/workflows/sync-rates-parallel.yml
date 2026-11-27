@@ -1,0 +1,52 @@
+name: Sync Parallel Rate
+
+on:
+  schedule:
+    # Daily 09:00, 13:00, and 17:00 VET (UTC-4 -> 13:00, 17:00, 21:00 UTC)
+    - cron: "0 13,17,21 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: harpy-radar-sync-rates-parallel
+  cancel-in-progress: false
+
+jobs:
+  sync-rates-parallel:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      NODE_ENV: production
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      DATABASE_SSL: auto
+      DB_POOL_MAX: "2"
+      APP_TIMEZONE: America/Caracas
+    steps:
+      - name: Verify required DATABASE_URL secret
+        run: |
+          if [ -z "$DATABASE_URL" ]; then
+            echo "DATABASE_URL repository secret is not configured." >&2
+            exit 1
+          fi
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 12
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Sync parallel USD exchange rate
+        run: pnpm worker:once --job=rates-parallel --skip-bootstrap

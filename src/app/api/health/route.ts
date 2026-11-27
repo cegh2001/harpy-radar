@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { pool } from "@/db/client";
 import { getAllJobHeartbeats } from "@/features/worker/infrastructure/heartbeat-service";
+import { NO_STORE_HEADERS } from "@/shared/lib/http/cache-headers";
 
 export const dynamic = "force-dynamic";
 
@@ -9,18 +10,21 @@ export async function GET() {
     await pool.query("SELECT 1");
     const heartbeats = await getAllJobHeartbeats();
 
-    return NextResponse.json({
-      status: "ok",
-      timestamp: new Date().toISOString(),
-      database: "connected",
-      workerHeartbeats: heartbeats.map((hb) => ({
-        jobName: hb.jobName,
-        isExecuting: hb.isExecuting,
-        lastCycleStatus: hb.lastCycleStatus,
-        lastCycleAt: hb.lastCycleAt ? hb.lastCycleAt.toISOString() : null,
-        cycleCount: hb.cycleCount,
-      })),
-    });
+    return NextResponse.json(
+      {
+        status: "ok",
+        timestamp: new Date().toISOString(),
+        database: "connected",
+        workerHeartbeats: heartbeats.map((hb) => ({
+          jobName: hb.jobName,
+          isExecuting: hb.isExecuting,
+          lastCycleStatus: hb.lastCycleStatus,
+          lastCycleAt: hb.lastCycleAt ? hb.lastCycleAt.toISOString() : null,
+          cycleCount: hb.cycleCount,
+        })),
+      },
+      { headers: NO_STORE_HEADERS }
+    );
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     return NextResponse.json(
@@ -30,7 +34,7 @@ export async function GET() {
         database: "unreachable",
         error: message,
       },
-      { status: 503 }
+      { status: 503, headers: NO_STORE_HEADERS }
     );
   }
 }
