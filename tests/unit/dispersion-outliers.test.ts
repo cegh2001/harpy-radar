@@ -30,7 +30,7 @@ describe("dispersion-outliers", () => {
         value: 2.5,
         status: "normal",
         deviationFromMedianPct: 0,
-        modifiedZScore: 0,
+        modifiedZScore: null,
       },
     ]);
   });
