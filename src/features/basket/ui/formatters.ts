@@ -51,6 +51,7 @@ export const JOB_DISPLAY_NAMES: Record<string, string> = {
   "job:scrape-punto-al-mayor": "Catálogo Punto al Mayor",
   "job:scrape-viva": "Catálogo Viva Supercentro",
   "job:scrape-locatel": "Catálogo Locatel",
+  "job:arbitrate-anomalies": "Árbitro de anomalías y resumen diario",
 };
 
 export function formatUsd(value: number | null): string {

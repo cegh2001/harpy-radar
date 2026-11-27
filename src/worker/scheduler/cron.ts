@@ -2,6 +2,7 @@ import { env } from "@/shared/config/env";
 import { exchangeRateRepository } from "@/features/exchange-rates/infrastructure/exchange-rate-repository";
 import { recordJobHeartbeat } from "@/features/worker/infrastructure/heartbeat-service";
 import { RETAILER_JOB_SPECS } from "../jobs/retailer-jobs";
+import { runArbitrateAnomaliesJob } from "../jobs/arbitrate-anomalies-job";
 import { runScrapeRetailerJob } from "../jobs/scrape-retailer-job";
 import {
   runSyncOfficialRatesJob,
@@ -13,6 +14,7 @@ export const KNOWN_JOBS = [
   "job:sync-rates-official",
   "job:sync-rates-parallel",
   ...RETAILER_JOB_SPECS.map((spec) => spec.jobName),
+  "job:arbitrate-anomalies",
 ] as const;
 
 export interface SchedulerController {
@@ -85,6 +87,14 @@ export async function startScheduler(): Promise<SchedulerController> {
     })
   );
 
+  const arbiterJob = scheduleLockedJob({
+    schedule: env.ARBITER_CRON,
+    jobName: "job:arbitrate-anomalies",
+    lockKey: "arbitrate-anomalies",
+    timeoutMs: 120_000,
+    run: runArbitrateAnomaliesJob,
+  });
+
   return {
     stop: () => {
       rateOfficialJob.stop();
@@ -92,6 +102,7 @@ export async function startScheduler(): Promise<SchedulerController> {
       for (const job of retailerJobs) {
         job.stop();
       }
+      arbiterJob.stop();
     },
   };
 }

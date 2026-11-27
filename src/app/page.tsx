@@ -31,6 +31,7 @@ function buildFallbackSnapshot() {
       gapPct: null,
     },
     basket: computeBasketIndex(products, [], null),
+    anomalyDigest: null,
     benchmarks: REFERENCE_BENCHMARKS.map((item, idx) => ({
       id: idx + 1,
       ...item,

@@ -71,3 +71,15 @@ jobs:
           else
             pnpm worker:once --job=retailers --skip-bootstrap
           fi
+
+      - name: Run post-scrape anomaly arbitration and daily digest
+        if: >-
+          success() &&
+          (inputs.retailer == '' || inputs.retailer == 'all') &&
+          vars.ARBITER_ENABLED == 'true' &&
+          secrets.GEMINI_API_KEY != ''
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          ARBITER_ENABLED: ${{ vars.ARBITER_ENABLED }}
+          ARBITER_MAX_DAILY_CALLS: ${{ vars.ARBITER_MAX_DAILY_CALLS || '40' }}
+        run: pnpm worker:once --job=arbitrate --skip-bootstrap

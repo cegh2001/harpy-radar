@@ -2,6 +2,7 @@ import type {
   BaseUnit,
   BasketCategory,
 } from "@/features/catalog/domain/canonical-basket";
+import type { ProductTier } from "@/features/arbitration/domain/arbiter-schemas";
 import type { OutlierStatus } from "./dispersion-outliers";
 
 export interface RetailerOfferOption {
@@ -17,6 +18,8 @@ export interface RetailerOfferOption {
   normalizedUnitPriceUsd: number;
   inStock: boolean;
   matchConfidence: number;
+  productTier?: ProductTier | null;
+  arbitrationReason?: string | null;
   storeAvailabilityCount: number | null;
   productUrl: string | null;
   region: string;
@@ -42,6 +45,8 @@ export interface BasketObservationInput {
   retailerName: string;
   externalSku?: string | null;
   matchConfidence?: number;
+  productTier?: ProductTier | null;
+  arbitrationReason?: string | null;
   rawTitle: string;
   originalAmount: number;
   originalCurrency: "USD" | "VES";
@@ -73,6 +78,8 @@ export interface RetailerPriceBreakdown {
   normalizedUnitPriceUsd: number;
   inStock: boolean;
   matchConfidence: number;
+  productTier?: ProductTier | null;
+  arbitrationReason?: string | null;
   matchedSkuCount: number;
   deltaVsCheapestPct: number | null;
   outlierStatus: OutlierStatus;

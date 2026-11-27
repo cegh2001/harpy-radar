@@ -27,6 +27,17 @@ describe("parseEnv", () => {
       "https://tucentralonline.com/Maiquetia-53"
     );
     expect(parsed.SCRAPE_CONCURRENCY).toBe(2);
+    expect(parsed.GEMINI_API_KEY).toBeUndefined();
+    expect(parsed.ARBITER_ENABLED).toBe(false);
+    expect(parsed.ARBITER_MAX_DAILY_CALLS).toBe(40);
+    expect(parsed.ARBITER_CACHE_TTL_DAYS).toBe(45);
+    expect(parsed.ARBITER_MODEL_CASCADE).toBe(
+      "gemini-3.5-flash-lite,gemini-3.5-flash,gemini-2.5-flash"
+    );
+    expect(parsed.DIGEST_MODEL_CASCADE).toBe(
+      "gemini-3.5-flash,gemini-3.5-flash-lite,gemini-2.5-flash"
+    );
+    expect(parsed.ARBITER_CRON).toBe("0 15 7 * * *");
   });
 
   it("parses boolean string flags strictly", () => {
@@ -39,6 +50,8 @@ describe("parseEnv", () => {
       SOURCE_FARMATODO_ENABLED: "false",
       SOURCE_VIVA_ENABLED: "false",
       SCRAPE_CONCURRENCY: "4",
+      ARBITER_ENABLED: "true",
+      ARBITER_MAX_DAILY_CALLS: "25",
     });
 
     expect(parsed.NODE_ENV).toBe("production");
@@ -48,6 +61,8 @@ describe("parseEnv", () => {
     expect(parsed.SOURCE_FARMATODO_ENABLED).toBe(false);
     expect(parsed.SOURCE_VIVA_ENABLED).toBe(false);
     expect(parsed.SCRAPE_CONCURRENCY).toBe(4);
+    expect(parsed.ARBITER_ENABLED).toBe(true);
+    expect(parsed.ARBITER_MAX_DAILY_CALLS).toBe(25);
   });
 
   it("rejects invalid DATABASE_URL values", () => {

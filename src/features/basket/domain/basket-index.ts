@@ -99,6 +99,8 @@ function toRetailerBreakdown(
     normalizedUnitPriceUsd: obs.normalizedUnitPriceUsd,
     inStock: obs.inStock,
     matchConfidence: obs.matchConfidence ?? 1,
+    productTier: obs.productTier ?? null,
+    arbitrationReason: obs.arbitrationReason ?? null,
     matchedSkuCount: entry.matchedSkuCount,
     deltaVsCheapestPct,
     outlierStatus,

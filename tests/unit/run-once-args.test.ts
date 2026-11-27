@@ -34,6 +34,14 @@ describe("parseRunOnceArgs", () => {
     });
 
     expect(
+      parseRunOnceArgs(["--job=arbitrate", "--skip-bootstrap"], RETAILER_SLUGS)
+    ).toStrictEqual({
+      job: "arbitrate",
+      retailerSlug: null,
+      skipBootstrap: true,
+    });
+
+    expect(
       parseRunOnceArgs(["--job=retailers"], RETAILER_SLUGS)
     ).toStrictEqual({
       job: "retailers",

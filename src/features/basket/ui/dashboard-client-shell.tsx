@@ -10,6 +10,7 @@ import {
   parseDashboardTab,
   type DashboardTab,
 } from "../domain/dashboard-tab";
+import { AnomalyDigestPanel } from "./anomaly-digest-panel";
 import { BasketKpiGrid } from "./basket-kpi-grid";
 import { BenchmarkComparisonChart } from "./benchmark-comparison-chart";
 import { CategoryBreakdownChart } from "./category-breakdown-chart";
@@ -151,6 +152,10 @@ export function DashboardClientShell({ snapshot }: DashboardClientShellProps) {
       >
         {activeTab === "products" && (
           <>
+            {snapshot.anomalyDigest && (
+              <AnomalyDigestPanel digest={snapshot.anomalyDigest} />
+            )}
+
             <div className="flex flex-col gap-3 rounded-xl border border-slate-800 bg-slate-900/60 p-3.5 lg:flex-row lg:items-center lg:justify-between">
               <div className="flex flex-wrap items-center gap-2">
                 {REGIONS.map((region) => (

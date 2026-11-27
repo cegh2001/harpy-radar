@@ -1,3 +1,6 @@
+import { applyArbitrationVerdictsToObservations } from "@/features/arbitration/domain/apply-arbitration-verdicts";
+import type { DailyAnomalyDigestDto } from "@/features/arbitration/domain/arbiter-schemas";
+import { arbitrationRepository } from "@/features/arbitration/infrastructure/arbitration-repository";
 import { catalogRepository } from "@/features/catalog/infrastructure/catalog-repository";
 import {
   exchangeRateRepository,
@@ -62,6 +65,7 @@ export interface DashboardSnapshot {
     gapPct: number | null;
   };
   basket: BasketIndexSummary;
+  anomalyDigest: DailyAnomalyDigestDto | null;
   benchmarks: BenchmarkDto[];
   retailers: RetailerStatusDto[];
   heartbeats: WorkerHeartbeatDto[];
@@ -81,7 +85,7 @@ export interface ProductDetailSnapshot {
   }>;
 }
 
-function mapObservationRow(
+export function mapObservationRow(
   row: LatestObservationJoined
 ): BasketObservationInput {
   return {
@@ -139,7 +143,7 @@ function serializeRates(
 export async function getDashboardSnapshot(
   region = "all"
 ): Promise<DashboardSnapshot> {
-  const [rates, products, rawObs, benchmarks, retailers, heartbeats] =
+  const [rates, products, rawObs, benchmarks, retailers, heartbeats, anomalyDigest] =
     await Promise.all([
       exchangeRateRepository.getLatestRatesSnapshot(),
       catalogRepository.getActiveCanonicalProducts(),
@@ -147,10 +151,22 @@ export async function getDashboardSnapshot(
       benchmarkRepository.getAllBenchmarks(),
       priceRepository.getAllRetailers(),
       getAllJobHeartbeats(),
+      arbitrationRepository.getLatestDigest().catch(() => null),
     ]);
 
-  const mappedObservations = filterObservationsByRegion(
+  const verdictsByKey = await arbitrationRepository
+    .getActiveVerdictsBySlugs(products.map((p) => p.slug))
+    .catch(() => new Map());
+  const slugByProductId = new Map(products.map((p) => [p.id, p.slug]));
+
+  const arbitratedObservations = applyArbitrationVerdictsToObservations(
     rawObs.map(mapObservationRow),
+    slugByProductId,
+    verdictsByKey
+  );
+
+  const mappedObservations = filterObservationsByRegion(
+    arbitratedObservations,
     region
   );
 
@@ -175,6 +191,7 @@ export async function getDashboardSnapshot(
     region,
     rates: serializeRates(rates),
     basket,
+    anomalyDigest,
     benchmarks,
     retailers: retailers.map((r) => ({
       slug: r.slug,
@@ -203,17 +220,24 @@ export async function getProductDetailSnapshot(
   const product = await catalogRepository.getCanonicalProductBySlug(slug);
   if (!product) return null;
 
-  const [rates, latestObs, historyRows] = await Promise.all([
+  const [rates, latestObs, historyRows, verdictsByKey] = await Promise.all([
     exchangeRateRepository.getLatestRatesSnapshot(),
     priceRepository.getLatestObservationsForProduct(product.id, "all"),
     priceRepository.getProductHistory(product.id, 30),
+    arbitrationRepository
+      .getActiveVerdictsBySlugs([product.slug])
+      .catch(() => new Map()),
   ]);
 
-  const summary = computeProductSummary(
-    product,
+  const arbitrated = applyArbitrationVerdictsToObservations(
     latestObs.map(mapObservationRow),
-    { includeAlternatives: true }
+    new Map([[product.id, product.slug]]),
+    verdictsByKey
   );
+
+  const summary = computeProductSummary(product, arbitrated, {
+    includeAlternatives: true,
+  });
 
   return {
     product: summary,

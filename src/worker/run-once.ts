@@ -2,6 +2,7 @@ import { pool } from "@/db/client";
 import { runDatabaseMigrations } from "@/db/run-migrations";
 import { seedDatabase } from "@/db/seed-data";
 import { RETAILER_JOB_SPECS, RETAILER_SLUGS } from "./jobs/retailer-jobs";
+import { runArbitrateAnomaliesJob } from "./jobs/arbitrate-anomalies-job";
 import { runScrapeRetailerJob } from "./jobs/scrape-retailer-job";
 import {
   runSyncOfficialRatesJob,
@@ -109,6 +110,19 @@ async function main() {
         )
       );
     }
+  }
+
+  if (options.job === "all" || options.job === "arbitrate") {
+    results.push(
+      await executeTrackedJob("job:arbitrate-anomalies", () =>
+        JobRunner.run({
+          jobName: "job:arbitrate-anomalies",
+          lockKey: "arbitrate-anomalies",
+          timeoutMs: 120_000,
+          run: runArbitrateAnomaliesJob,
+        })
+      )
+    );
   }
 
   const hasFailures = results.some((entry) => !entry.ok);

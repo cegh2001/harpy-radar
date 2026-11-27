@@ -57,6 +57,8 @@ function toOfferOption(obs: BasketObservationInput): RetailerOfferOption {
     normalizedUnitPriceUsd: obs.normalizedUnitPriceUsd,
     inStock: obs.inStock,
     matchConfidence: obs.matchConfidence ?? 1,
+    productTier: obs.productTier ?? null,
+    arbitrationReason: obs.arbitrationReason ?? null,
     storeAvailabilityCount: obs.storeAvailabilityCount,
     productUrl: obs.productUrl,
     region: obs.region,

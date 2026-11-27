@@ -12,6 +12,7 @@ export const JOB_LOCK_IDS: Record<string, number> = {
   "scrape-punto-al-mayor": 988654327,
   "scrape-viva": 988654328,
   "scrape-locatel": 988654329,
+  "arbitrate-anomalies": 988654332,
 };
 
 const MAX_INT32 = 2147483647;

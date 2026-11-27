@@ -9,7 +9,7 @@ Keep changes bounded to the authorized outcome and preserve unrelated user work.
 - Stay local in `src/features/<feature>` and follow existing `domain`, `application`, `infrastructure`, and `ui` ownership. Do not introduce a new project layout.
 - Keep pure domain logic independent of databases, HTTP providers, and UI. Handlers and worker jobs orchestrate existing use cases rather than duplicate business rules.
 - Inject dependencies at I/O boundaries using explicit parameter objects or constructor injection. Apply SOLID to protect real contracts, not to manufacture speculative abstractions.
-- Prefer KISS and YAGNI: zero LLM dependency for deterministic price matching or unit normalization; keep costs near zero.
+- Prefer KISS and YAGNI: deterministic price matching and unit normalization remain zero-LLM; LLM calls are strictly limited to an optional, DB-cached exception arbiter and 1x/day anomaly digest inside the background worker (never in dashboard request paths); keep costs near zero.
 - Preserve public APIs unless the authorized scope requires a change. Avoid unsafe casts or non-null assertions that hide contract failures.
 
 ## Verification

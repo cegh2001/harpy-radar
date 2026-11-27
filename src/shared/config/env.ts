@@ -5,6 +5,7 @@ if (
   process.env.RELEASE_VERIFY_GUARD !== "true" &&
   process.env.NODE_ENV !== "test"
 ) {
+  config({ path: ".env.local", quiet: true });
   config({ path: ".env", quiet: true });
 }
 
@@ -62,6 +63,19 @@ export const envSchema = z.object({
   FARMATODO_ALGOLIA_INDEX: z.string().min(1).default("products-venezuela"),
   BCV_CA_CERT: z.string().optional(),
   BCV_CA_BUNDLE: z.string().optional(),
+  GEMINI_API_KEY: z.string().min(1).optional(),
+  ARBITER_ENABLED: booleanFlagSchema(false),
+  ARBITER_MAX_DAILY_CALLS: z.coerce.number().int().nonnegative().max(500).default(40),
+  ARBITER_CACHE_TTL_DAYS: z.coerce.number().int().positive().max(365).default(45),
+  ARBITER_MODEL_CASCADE: z
+    .string()
+    .min(1)
+    .default("gemini-3.5-flash-lite,gemini-3.5-flash,gemini-2.5-flash"),
+  DIGEST_MODEL_CASCADE: z
+    .string()
+    .min(1)
+    .default("gemini-3.5-flash,gemini-3.5-flash-lite,gemini-2.5-flash"),
+  ARBITER_CRON: z.string().min(1).default("0 15 7 * * *"),
 });
 
 export type Env = z.infer<typeof envSchema>;

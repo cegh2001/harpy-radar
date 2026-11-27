@@ -8,6 +8,7 @@ import {
   CircleSlash,
   ExternalLink,
 } from "lucide-react";
+import type { ProductTier } from "@/features/arbitration/domain/arbiter-schemas";
 import type { RetailerPriceBreakdown } from "../domain/basket-index";
 import {
   formatPackageSizeLabel,
@@ -22,6 +23,12 @@ import {
   formatComparisonPackageValue,
   formatComparisonUnitValue,
 } from "./product-comparison-helpers";
+
+const TIER_LABELS: Record<ProductTier, string> = {
+  basic: "Básico",
+  standard: "Estándar",
+  premium_imported: "Premium / Importado",
+};
 
 interface ProductComparisonTableProps {
   retailers: RetailerPriceBreakdown[];
@@ -104,6 +111,14 @@ export function ProductComparisonTable({
                       <td className="px-4 py-3 text-slate-200">
                         <div className="flex flex-wrap items-center gap-1.5">
                           <span>{obs.rawTitle}</span>
+                          {obs.productTier && (
+                            <span
+                              title={obs.arbitrationReason ?? undefined}
+                              className="rounded-full border border-sky-500/30 bg-sky-500/10 px-2 py-0.5 text-[11px] font-medium text-sky-300"
+                            >
+                              {TIER_LABELS[obs.productTier]}
+                            </span>
+                          )}
                           {obs.outlierStatus !== "normal" && (
                             <span
                               title={

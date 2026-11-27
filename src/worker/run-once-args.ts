@@ -3,7 +3,8 @@ export type RunOnceJobTarget =
   | "rates"
   | "rates-official"
   | "rates-parallel"
-  | "retailers";
+  | "retailers"
+  | "arbitrate";
 
 export interface RunOnceOptions {
   job: RunOnceJobTarget;
@@ -17,6 +18,7 @@ const VALID_JOB_TARGETS: readonly RunOnceJobTarget[] = [
   "rates-official",
   "rates-parallel",
   "retailers",
+  "arbitrate",
 ];
 
 function isValidJobTarget(value: string): value is RunOnceJobTarget {
