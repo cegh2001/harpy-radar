@@ -91,11 +91,98 @@ describe("basket-index", () => {
 
     const harina = index.products[0];
     expect(harina.cheapestRetailerSlug).toBe("farmatodo-ve");
+    expect(harina.robustCheapestRetailerSlug).toBe("farmatodo-ve");
+    expect(harina.robustCheapestUnitUsdBcv).toBe(1.11);
     expect(harina.averageUnitUsdBcv).toBe(1.27);
     expect(harina.averageUnitVes).toBe(1168.175);
     expect(harina.averageUnitUsdParallel).toBe(1.055);
     expect(harina.spreadPct).toBeCloseTo(28.83, 2);
+    expect(harina.robustSpreadPct).toBeCloseTo(28.83, 2);
+    expect(harina.outlierCount).toBe(0);
+    expect(harina.needsArbitration).toBe(false);
+    expect(index.estimatedMonthlyBasketRobustUsdBcv).toBe(8.88);
+    expect(index.estimatedMonthlyBasketMedianUsdBcv).toBe(10.16);
+    expect(index.flaggedProductsCount).toBe(0);
+    expect(index.outlierOffersCount).toBe(0);
     expect(index.benchmarkReferenceLabel).toBe("OVF (2026-10)");
+  });
+
+  it("excludes low-outlier mismatched SKUs from robust index while preserving raw cheapest", () => {
+    const outlierObs: BasketObservationInput[] = [
+      {
+        ...OBSERVATIONS[0],
+        retailerId: 10,
+        retailerSlug: "outlier-chain",
+        retailerName: "Cadena Atípica",
+        externalSku: "sku-outlier",
+        rawTitle: "Harina Sospechosa 1kg",
+        originalAmount: 0.4,
+        priceUsdBcv: 0.4,
+        priceVes: 368,
+        priceUsdParallel: 0.33,
+        normalizedUnitPriceUsd: 0.4,
+      },
+      {
+        ...OBSERVATIONS[0],
+        retailerId: 1,
+        retailerSlug: "bahia-la-guaira",
+        retailerName: "Bahía Supermarket",
+        externalSku: "sku-bahia",
+        originalAmount: 1.15,
+        priceUsdBcv: 1.15,
+        priceVes: 1058,
+        priceUsdParallel: 0.96,
+        normalizedUnitPriceUsd: 1.15,
+      },
+      {
+        ...OBSERVATIONS[0],
+        retailerId: 2,
+        retailerSlug: "farmatodo-ve",
+        retailerName: "Farmatodo",
+        externalSku: "sku-farma",
+        originalAmount: 1.2,
+        priceUsdBcv: 1.2,
+        priceVes: 1104,
+        priceUsdParallel: 1.0,
+        normalizedUnitPriceUsd: 1.2,
+      },
+      {
+        ...OBSERVATIONS[0],
+        retailerId: 3,
+        retailerSlug: "viva-la-guaira",
+        retailerName: "Viva Supercentro",
+        externalSku: "sku-viva",
+        originalAmount: 1.25,
+        priceUsdBcv: 1.25,
+        priceVes: 1150,
+        priceUsdParallel: 1.04,
+        normalizedUnitPriceUsd: 1.25,
+      },
+    ];
+
+    const index = computeBasketIndex([PRODUCTS[0]], outlierObs, null);
+    const harina = index.products[0];
+
+    expect(harina.cheapestRetailerSlug).toBe("outlier-chain");
+    expect(harina.cheapestUnitUsdBcv).toBe(0.4);
+    expect(harina.robustCheapestRetailerSlug).toBe("bahia-la-guaira");
+    expect(harina.robustCheapestUnitUsdBcv).toBe(1.15);
+    expect(harina.outlierCount).toBe(1);
+    expect(harina.needsArbitration).toBe(true);
+    expect(harina.spreadPct).toBe(212.5);
+    expect(harina.robustSpreadPct).toBeCloseTo(8.7, 2);
+
+    expect(harina.retailers[0].outlierStatus).toBe("low_outlier");
+    expect(harina.retailers.slice(1).map((r) => r.outlierStatus)).toStrictEqual(
+      ["normal", "normal", "normal"]
+    );
+
+    // 8 kg * $0.40 = $3.20 raw; 8 kg * $1.15 = $9.20 robust; 8 kg * $1.175 = $9.40 median
+    expect(index.estimatedMonthlyBasketUsdBcv).toBe(3.2);
+    expect(index.estimatedMonthlyBasketRobustUsdBcv).toBe(9.2);
+    expect(index.estimatedMonthlyBasketMedianUsdBcv).toBe(9.4);
+    expect(index.flaggedProductsCount).toBe(1);
+    expect(index.outlierOffersCount).toBe(1);
   });
 
   it("filters observations by region", () => {

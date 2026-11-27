@@ -2,6 +2,7 @@ import type {
   BaseUnit,
   BasketCategory,
 } from "@/features/catalog/domain/canonical-basket";
+import type { OutlierStatus } from "./dispersion-outliers";
 
 export interface RetailerOfferOption {
   externalSku: string | null;
@@ -74,6 +75,8 @@ export interface RetailerPriceBreakdown {
   matchConfidence: number;
   matchedSkuCount: number;
   deltaVsCheapestPct: number | null;
+  outlierStatus: OutlierStatus;
+  deviationFromMedianPct: number | null;
   alternatives: RetailerOfferOption[];
   storeAvailabilityCount: number | null;
   productUrl: string | null;
@@ -100,8 +103,17 @@ export interface ProductPriceSummary {
   averageUnitUsdParallel: number | null;
   cheapestRetailerName: string | null;
   cheapestRetailerSlug: string | null;
+  robustCheapestUnitUsdBcv: number | null;
+  robustCheapestUnitVes: number | null;
+  robustCheapestUnitUsdParallel: number | null;
+  robustCheapestRetailerName: string | null;
+  robustCheapestRetailerSlug: string | null;
   spreadPct: number | null;
+  robustSpreadPct: number | null;
+  outlierCount: number;
+  needsArbitration: boolean;
   monthlyContributionUsdBcv: number | null;
+  robustMonthlyContributionUsdBcv: number | null;
   inStockAny: boolean;
   retailerCount: number;
   retailers: RetailerPriceBreakdown[];
@@ -123,14 +135,20 @@ export interface BenchmarkReferenceInput {
 
 export interface BasketIndexSummary {
   estimatedMonthlyBasketUsdBcv: number;
+  estimatedMonthlyBasketRobustUsdBcv: number;
+  estimatedMonthlyBasketMedianUsdBcv: number;
   estimatedMonthlyBasketAvgUsdBcv: number;
   estimatedMonthlyBasketVes: number;
+  estimatedMonthlyBasketRobustVes: number;
   estimatedMonthlyBasketAvgVes: number;
   estimatedMonthlyBasketUsdParallel: number | null;
+  estimatedMonthlyBasketRobustUsdParallel: number | null;
   estimatedMonthlyBasketAvgUsdParallel: number | null;
   coveredProductsCount: number;
   totalProductsCount: number;
   coveragePct: number;
+  flaggedProductsCount: number;
+  outlierOffersCount: number;
   benchmarkDeltaUsd: number | null;
   benchmarkDeltaPct: number | null;
   benchmarkReferenceLabel: string | null;

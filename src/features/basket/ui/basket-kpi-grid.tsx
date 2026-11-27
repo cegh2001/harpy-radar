@@ -41,6 +41,20 @@ export function BasketKpiGrid({ basket, retailers }: BasketKpiGridProps) {
               · Promedio: {formatUsd(basket.estimatedMonthlyBasketAvgUsdBcv)}
             </span>
           )}
+          {basket.coveredProductsCount > 0 && (
+            <span className="text-slate-300">
+              · Mediana: {formatUsd(basket.estimatedMonthlyBasketMedianUsdBcv)}
+            </span>
+          )}
+          {basket.coveredProductsCount > 0 &&
+            basket.outlierOffersCount > 0 &&
+            basket.estimatedMonthlyBasketRobustUsdBcv !==
+              basket.estimatedMonthlyBasketUsdBcv && (
+              <span className="text-amber-300">
+                · Sin atípicos:{" "}
+                {formatUsd(basket.estimatedMonthlyBasketRobustUsdBcv)}
+              </span>
+            )}
           {basket.estimatedMonthlyBasketUsdParallel !== null && (
             <span className="text-amber-300">
               · {formatUsd(basket.estimatedMonthlyBasketUsdParallel)} paralelo

@@ -27,6 +27,8 @@ const SAMPLE_RETAILERS: RetailerPriceBreakdown[] = [
     matchConfidence: 0.86,
     matchedSkuCount: 2,
     deltaVsCheapestPct: 0,
+    outlierStatus: "normal",
+    deviationFromMedianPct: -20.46,
     alternatives: [
       {
         externalSku: "rio-140",
@@ -69,6 +71,8 @@ const SAMPLE_RETAILERS: RetailerPriceBreakdown[] = [
     matchConfidence: 0.86,
     matchedSkuCount: 1,
     deltaVsCheapestPct: 25.72,
+    outlierStatus: "normal",
+    deviationFromMedianPct: 0,
     alternatives: [],
     storeAvailabilityCount: null,
     productUrl: "https://store.bahiasupermarket.com/",
@@ -92,6 +96,8 @@ const SAMPLE_RETAILERS: RetailerPriceBreakdown[] = [
     matchConfidence: 0.86,
     matchedSkuCount: 1,
     deltaVsCheapestPct: 25.72,
+    outlierStatus: "normal",
+    deviationFromMedianPct: 0,
     alternatives: [],
     storeAvailabilityCount: null,
     productUrl: "https://puntoalmayor.com/",
@@ -176,5 +182,53 @@ describe("product-comparison-helpers", () => {
     expect(stats.cheapestPackageUsdBcv).toBe(1.75);
     expect(stats.averagePackageUsdBcv).toBeCloseTo(1.925, 3);
     expect(stats.spreadPct).toBe(20);
+    expect(stats.robustSpreadPct).toBe(20);
+    expect(stats.outlierCount).toBe(0);
+  });
+
+  it("recomputes outlier flags and robust spread dynamically when filtering by region", () => {
+    const withHighOutlier: RetailerPriceBreakdown[] = [
+      ...SAMPLE_RETAILERS,
+      {
+        retailerSlug: "locatel-caracas",
+        retailerName: "Locatel",
+        externalSku: "locatel-importado",
+        rawTitle: "Atún Importado Gourmet 140 Gr",
+        originalAmount: 4.9,
+        originalCurrency: "USD",
+        priceUsdBcv: 4.9,
+        priceVes: 4520.54,
+        priceUsdParallel: 4.08,
+        packageSize: 0.14,
+        packageUnit: "kg",
+        normalizedUnitPriceUsd: 35.0,
+        inStock: true,
+        matchConfidence: 0.86,
+        matchedSkuCount: 1,
+        deltaVsCheapestPct: 252.01,
+        outlierStatus: "normal",
+        deviationFromMedianPct: 0,
+        alternatives: [],
+        storeAvailabilityCount: 3,
+        productUrl: "https://www.locatel.com.ve/",
+        region: "Caracas",
+        observedAt: "2026-11-25T16:00:00Z",
+      },
+    ];
+
+    const allRegions = computeComparisonViewStats(withHighOutlier, "all");
+    expect(allRegions.outlierCount).toBe(1);
+    expect(allRegions.needsArbitration).toBe(true);
+    expect(allRegions.robustSpreadPct).toBeCloseTo(25.72, 2);
+    expect(allRegions.retailers[3].outlierStatus).toBe("high_outlier");
+
+    const laGuairaOnly = computeComparisonViewStats(
+      withHighOutlier,
+      "La Guaira"
+    );
+    expect(laGuairaOnly.outlierCount).toBe(0);
+    expect(laGuairaOnly.needsArbitration).toBe(false);
+    expect(laGuairaOnly.spreadPct).toBe(0);
+    expect(laGuairaOnly.robustSpreadPct).toBe(0);
   });
 });

@@ -4,6 +4,10 @@ import type {
   RetailerPriceBreakdown,
 } from "../domain/basket-index";
 import {
+  analyzePriceDispersion,
+  classifySinglePriceAgainstReference,
+} from "../domain/dispersion-outliers";
+import {
   formatPackageSizeLabel,
   formatUsd,
   formatVes,
@@ -190,17 +194,23 @@ export function computeComparisonViewStats(
       averagePackageVes: null,
       cheapestPackageUsdParallel: null,
       averagePackageUsdParallel: null,
+      medianUnitUsdBcv: null,
       spreadPct: null,
+      robustSpreadPct: null,
+      outlierCount: 0,
+      needsArbitration: false,
     };
   }
 
   const inStockList = filtered.filter((r) => r.inStock);
   const pool = inStockList.length > 0 ? inStockList : filtered;
-  const unitBcv = pool
-    .map((r) => r.normalizedUnitPriceUsd)
-    .sort((a, b) => a - b);
+  const poolPrices = pool.map((r) => r.normalizedUnitPriceUsd);
+  const dispersion = analyzePriceDispersion(poolPrices);
+  const poolIndexByRow = new Map<RetailerPriceBreakdown, number>();
+  pool.forEach((row, idx) => poolIndexByRow.set(row, idx));
+
+  const unitBcv = [...poolPrices].sort((a, b) => a - b);
   const minUnit = unitBcv[0];
-  const maxUnit = unitBcv[unitBcv.length - 1];
   const avg = (vals: number[]) =>
     vals.reduce((s, v) => s + v, 0) / vals.length;
 
@@ -213,25 +223,35 @@ export function computeComparisonViewStats(
     .filter((r) => r.priceUsdParallel !== null)
     .map((r) => r.priceUsdParallel as number);
 
-  const spreadPct =
-    unitBcv.length > 1 && minUnit > 0
-      ? Math.round(((maxUnit - minUnit) / minUnit) * 10000) / 100
-      : null;
-
-  const updatedRetailers = filtered.map((obs) => ({
-    ...obs,
-    deltaVsCheapestPct:
-      minUnit > 0
-        ? Math.round(
-            ((obs.normalizedUnitPriceUsd - minUnit) / minUnit) * 10000
-          ) / 100
-        : null,
-  }));
+  const updatedRetailers = filtered.map((obs) => {
+    const poolIdx = poolIndexByRow.get(obs);
+    const outlierInfo =
+      poolIdx !== undefined
+        ? dispersion.classifications[poolIdx]
+        : classifySinglePriceAgainstReference(
+            obs.normalizedUnitPriceUsd,
+            dispersion.median,
+            dispersion.mad,
+            pool.length
+          );
+    return {
+      ...obs,
+      deltaVsCheapestPct:
+        minUnit > 0
+          ? Math.round(
+              ((obs.normalizedUnitPriceUsd - minUnit) / minUnit) * 10000
+            ) / 100
+          : null,
+      outlierStatus: outlierInfo.status,
+      deviationFromMedianPct: outlierInfo.deviationFromMedianPct,
+    };
+  });
 
   return {
     retailers: updatedRetailers,
     cheapestUnitUsdBcv: cheapest.normalizedUnitPriceUsd,
     averageUnitUsdBcv: avg(unitBcv),
+    medianUnitUsdBcv: dispersion.median,
     cheapestUnitVes: cheapest.priceVes / cheapest.packageSize,
     averageUnitVes: avg(pool.map((r) => r.priceVes / r.packageSize)),
     cheapestUnitUsdParallel:
@@ -247,6 +267,9 @@ export function computeComparisonViewStats(
     cheapestPackageUsdParallel: cheapest.priceUsdParallel,
     averagePackageUsdParallel:
       parallelPkgs.length > 0 ? avg(parallelPkgs) : null,
-    spreadPct,
+    spreadPct: dispersion.rawSpreadPct,
+    robustSpreadPct: dispersion.robustSpreadPct,
+    outlierCount: dispersion.outlierCount,
+    needsArbitration: dispersion.needsArbitration,
   };
 }

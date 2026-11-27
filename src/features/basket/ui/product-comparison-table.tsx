@@ -102,8 +102,26 @@ export function ProductComparisonTable({
                         </div>
                       </td>
                       <td className="px-4 py-3 text-slate-200">
-                        <div className="flex items-center gap-1.5">
+                        <div className="flex flex-wrap items-center gap-1.5">
                           <span>{obs.rawTitle}</span>
+                          {obs.outlierStatus !== "normal" && (
+                            <span
+                              title={
+                                obs.deviationFromMedianPct !== null
+                                  ? `${formatPct(obs.deviationFromMedianPct)} vs. mediana`
+                                  : undefined
+                              }
+                              className={
+                                obs.outlierStatus === "low_outlier"
+                                  ? "rounded-full border border-rose-500/40 bg-rose-500/10 px-2 py-0.5 text-[11px] font-medium text-rose-300"
+                                  : "rounded-full border border-amber-500/40 bg-amber-500/10 px-2 py-0.5 text-[11px] font-medium text-amber-300"
+                              }
+                            >
+                              {obs.outlierStatus === "low_outlier"
+                                ? "Atípico bajo"
+                                : "Atípico alto"}
+                            </span>
+                          )}
                           {obs.productUrl && (
                             <a
                               href={obs.productUrl}

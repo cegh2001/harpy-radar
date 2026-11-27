@@ -9,7 +9,16 @@ import type {
   RetailerOfferOption,
   RetailerPriceBreakdown,
 } from "./basket-types";
-import { selectRetailerOffers } from "./select-retailer-offers";
+import {
+  analyzePriceDispersion,
+  classifySinglePriceAgainstReference,
+  computeMedian,
+  type OutlierStatus,
+} from "./dispersion-outliers";
+import {
+  selectRetailerOffers,
+  type SelectedRetailerOffer,
+} from "./select-retailer-offers";
 
 export type {
   BasketIndexSummary,
@@ -17,6 +26,7 @@ export type {
   BasketProductInput,
   BenchmarkReferenceInput,
   CategorySubtotal,
+  OutlierStatus,
   ProductPriceSummary,
   RetailerOfferOption,
   RetailerPriceBreakdown,
@@ -35,13 +45,70 @@ function computeAverage(values: number[]): number {
   return values.reduce((sum, v) => sum + v, 0) / values.length;
 }
 
-function computeMedian(sortedValues: number[]): number {
-  if (sortedValues.length === 0) return 0;
-  const mid = Math.floor(sortedValues.length / 2);
-  if (sortedValues.length % 2 === 0) {
-    return (sortedValues[mid - 1] + sortedValues[mid]) / 2;
-  }
-  return sortedValues[mid];
+function computeUnitParallel(obs: BasketObservationInput): number | null {
+  return obs.priceUsdParallel !== null
+    ? round4(obs.priceUsdParallel / obs.packageSize)
+    : null;
+}
+
+interface ParallelAccumulator {
+  sum: number;
+  complete: boolean;
+}
+
+function addParallelSample(
+  acc: ParallelAccumulator,
+  unitPrice: number | null,
+  qty: number
+): void {
+  if (unitPrice !== null) acc.sum += unitPrice * qty;
+  else acc.complete = false;
+}
+
+function finalizeParallel(
+  coveredProductsCount: number,
+  acc: ParallelAccumulator
+): number | null {
+  return coveredProductsCount > 0 && acc.complete ? round2(acc.sum) : null;
+}
+
+function toRetailerBreakdown(
+  entry: SelectedRetailerOffer,
+  minUnit: number,
+  outlierStatus: OutlierStatus,
+  deviationFromMedianPct: number | null
+): RetailerPriceBreakdown {
+  const obs = entry.representative;
+  const deltaVsCheapestPct =
+    minUnit > 0
+      ? round2(((obs.normalizedUnitPriceUsd - minUnit) / minUnit) * 100)
+      : null;
+
+  return {
+    retailerSlug: obs.retailerSlug,
+    retailerName: obs.retailerName,
+    externalSku: obs.externalSku ?? null,
+    rawTitle: obs.rawTitle,
+    originalAmount: obs.originalAmount,
+    originalCurrency: obs.originalCurrency,
+    priceUsdBcv: obs.priceUsdBcv,
+    priceVes: obs.priceVes,
+    priceUsdParallel: obs.priceUsdParallel,
+    packageSize: obs.packageSize,
+    packageUnit: obs.packageUnit,
+    normalizedUnitPriceUsd: obs.normalizedUnitPriceUsd,
+    inStock: obs.inStock,
+    matchConfidence: obs.matchConfidence ?? 1,
+    matchedSkuCount: entry.matchedSkuCount,
+    deltaVsCheapestPct,
+    outlierStatus,
+    deviationFromMedianPct,
+    alternatives: entry.alternatives,
+    storeAvailabilityCount: obs.storeAvailabilityCount,
+    productUrl: obs.productUrl,
+    region: obs.region,
+    observedAt: obs.observedAt.toISOString(),
+  };
 }
 
 export function filterObservationsByRegion(
@@ -80,8 +147,17 @@ export function computeProductSummary(
       averageUnitUsdParallel: null,
       cheapestRetailerName: null,
       cheapestRetailerSlug: null,
+      robustCheapestUnitUsdBcv: null,
+      robustCheapestUnitVes: null,
+      robustCheapestUnitUsdParallel: null,
+      robustCheapestRetailerName: null,
+      robustCheapestRetailerSlug: null,
       spreadPct: null,
+      robustSpreadPct: null,
+      outlierCount: 0,
+      needsArbitration: false,
       monthlyContributionUsdBcv: null,
+      robustMonthlyContributionUsdBcv: null,
       inStockAny: false,
       retailerCount: 0,
       retailers: [],
@@ -93,79 +169,67 @@ export function computeProductSummary(
   const pricingPool = inStockList.length > 0 ? inStockList : representatives;
 
   const cheapest = pricingPool[0];
-  const unitPrices = pricingPool
-    .map((obs) => obs.normalizedUnitPriceUsd)
-    .sort((a, b) => a - b);
-  const minUnit = unitPrices[0];
-  const maxUnit = unitPrices[unitPrices.length - 1];
-  const averageUnitUsdBcv = round4(computeAverage(unitPrices));
-  const medianUnit = round4(computeMedian(unitPrices));
-
-  const unitVes = round4(cheapest.priceVes / cheapest.packageSize);
-  const averageUnitVes = round4(
-    computeAverage(pricingPool.map((obs) => obs.priceVes / obs.packageSize))
+  const poolPrices = pricingPool.map((obs) => obs.normalizedUnitPriceUsd);
+  const dispersion = analyzePriceDispersion(poolPrices);
+  const normalPoolIdx = dispersion.classifications.findIndex(
+    (entry) => entry.status === "normal"
   );
-  const unitParallel =
-    cheapest.priceUsdParallel !== null
-      ? round4(cheapest.priceUsdParallel / cheapest.packageSize)
-      : null;
+  const robustCheapest = normalPoolIdx >= 0 ? pricingPool[normalPoolIdx] : cheapest;
+  const poolIndexByObs = new Map(pricingPool.map((obs, idx) => [obs, idx]));
+
+  const unitPrices = [...poolPrices].sort((a, b) => a - b);
+  const minUnit = unitPrices[0];
   const parallelUnits = pricingPool
     .filter((obs) => obs.priceUsdParallel !== null)
     .map((obs) => (obs.priceUsdParallel as number) / obs.packageSize);
-  const averageUnitUsdParallel =
-    parallelUnits.length > 0 ? round4(computeAverage(parallelUnits)) : null;
-
-  const spreadPct =
-    unitPrices.length > 1 && minUnit > 0
-      ? round2(((maxUnit - minUnit) / minUnit) * 100)
-      : null;
 
   return {
     ...product,
     cheapestUnitUsdBcv: cheapest.normalizedUnitPriceUsd,
-    averageUnitUsdBcv,
-    medianUnitUsdBcv: medianUnit,
-    cheapestUnitVes: unitVes,
-    averageUnitVes,
-    cheapestUnitUsdParallel: unitParallel,
-    averageUnitUsdParallel,
+    averageUnitUsdBcv: round4(computeAverage(unitPrices)),
+    medianUnitUsdBcv: round4(computeMedian(unitPrices)),
+    cheapestUnitVes: round4(cheapest.priceVes / cheapest.packageSize),
+    averageUnitVes: round4(
+      computeAverage(pricingPool.map((obs) => obs.priceVes / obs.packageSize))
+    ),
+    cheapestUnitUsdParallel: computeUnitParallel(cheapest),
+    averageUnitUsdParallel:
+      parallelUnits.length > 0 ? round4(computeAverage(parallelUnits)) : null,
     cheapestRetailerName: cheapest.retailerName,
     cheapestRetailerSlug: cheapest.retailerSlug,
-    spreadPct,
-    monthlyContributionUsdBcv: round2(
-      cheapest.normalizedUnitPriceUsd * product.basketMonthlyQty
+    robustCheapestUnitUsdBcv: robustCheapest.normalizedUnitPriceUsd,
+    robustCheapestUnitVes: round4(robustCheapest.priceVes / robustCheapest.packageSize),
+    robustCheapestUnitUsdParallel: computeUnitParallel(robustCheapest),
+    robustCheapestRetailerName: robustCheapest.retailerName,
+    robustCheapestRetailerSlug: robustCheapest.retailerSlug,
+    spreadPct: dispersion.rawSpreadPct,
+    robustSpreadPct: dispersion.robustSpreadPct,
+    outlierCount: dispersion.outlierCount,
+    needsArbitration: dispersion.needsArbitration,
+    monthlyContributionUsdBcv: round2(cheapest.normalizedUnitPriceUsd * product.basketMonthlyQty),
+    robustMonthlyContributionUsdBcv: round2(
+      robustCheapest.normalizedUnitPriceUsd * product.basketMonthlyQty
     ),
     inStockAny: inStockList.length > 0,
     retailerCount: selectedOffers.length,
     retailers: selectedOffers.map((entry) => {
       const obs = entry.representative;
-      const deltaVsCheapestPct =
-        minUnit > 0
-          ? round2(((obs.normalizedUnitPriceUsd - minUnit) / minUnit) * 100)
-          : null;
-      return {
-        retailerSlug: obs.retailerSlug,
-        retailerName: obs.retailerName,
-        externalSku: obs.externalSku ?? null,
-        rawTitle: obs.rawTitle,
-        originalAmount: obs.originalAmount,
-        originalCurrency: obs.originalCurrency,
-        priceUsdBcv: obs.priceUsdBcv,
-        priceVes: obs.priceVes,
-        priceUsdParallel: obs.priceUsdParallel,
-        packageSize: obs.packageSize,
-        packageUnit: obs.packageUnit,
-        normalizedUnitPriceUsd: obs.normalizedUnitPriceUsd,
-        inStock: obs.inStock,
-        matchConfidence: obs.matchConfidence ?? 1,
-        matchedSkuCount: entry.matchedSkuCount,
-        deltaVsCheapestPct,
-        alternatives: entry.alternatives,
-        storeAvailabilityCount: obs.storeAvailabilityCount,
-        productUrl: obs.productUrl,
-        region: obs.region,
-        observedAt: obs.observedAt.toISOString(),
-      };
+      const poolIdx = poolIndexByObs.get(obs);
+      const outlierInfo =
+        poolIdx !== undefined
+          ? dispersion.classifications[poolIdx]
+          : classifySinglePriceAgainstReference(
+              obs.normalizedUnitPriceUsd,
+              dispersion.median,
+              dispersion.mad,
+              pricingPool.length
+            );
+      return toRetailerBreakdown(
+        entry,
+        minUnit,
+        outlierInfo.status,
+        outlierInfo.deviationFromMedianPct
+      );
     }),
   };
 }
@@ -180,14 +244,18 @@ export function computeBasketIndex(
   );
 
   let estimatedMonthlyBasketUsdBcv = 0;
+  let estimatedMonthlyBasketRobustUsdBcv = 0;
+  let estimatedMonthlyBasketMedianUsdBcv = 0;
   let estimatedMonthlyBasketAvgUsdBcv = 0;
   let estimatedMonthlyBasketVes = 0;
+  let estimatedMonthlyBasketRobustVes = 0;
   let estimatedMonthlyBasketAvgVes = 0;
-  let parallelAccum = 0;
-  let parallelAvgAccum = 0;
-  let hasAllParallel = true;
-  let hasAllAvgParallel = true;
+  const parallelAcc: ParallelAccumulator = { sum: 0, complete: true };
+  const parallelRobustAcc: ParallelAccumulator = { sum: 0, complete: true };
+  const parallelAvgAcc: ParallelAccumulator = { sum: 0, complete: true };
   let coveredProductsCount = 0;
+  let flaggedProductsCount = 0;
+  let outlierOffersCount = 0;
 
   const categoryMap = new Map<
     BasketCategory,
@@ -202,57 +270,53 @@ export function computeBasketIndex(
     };
     cat.totalCount += 1;
 
+    if (summary.needsArbitration) flaggedProductsCount += 1;
+    outlierOffersCount += summary.outlierCount;
+
+    const {
+      robustCheapestUnitUsdBcv,
+      medianUnitUsdBcv,
+      averageUnitUsdBcv,
+      cheapestUnitVes,
+      robustCheapestUnitVes,
+      averageUnitVes,
+      monthlyContributionUsdBcv,
+      robustMonthlyContributionUsdBcv,
+    } = summary;
+
     if (
       summary.cheapestUnitUsdBcv !== null &&
-      summary.averageUnitUsdBcv !== null &&
-      summary.cheapestUnitVes !== null &&
-      summary.averageUnitVes !== null &&
-      summary.monthlyContributionUsdBcv !== null
+      robustCheapestUnitUsdBcv !== null &&
+      medianUnitUsdBcv !== null &&
+      averageUnitUsdBcv !== null &&
+      cheapestUnitVes !== null &&
+      robustCheapestUnitVes !== null &&
+      averageUnitVes !== null &&
+      monthlyContributionUsdBcv !== null &&
+      robustMonthlyContributionUsdBcv !== null
     ) {
       coveredProductsCount += 1;
       cat.coveredCount += 1;
-      cat.monthlyUsdBcv = round2(
-        cat.monthlyUsdBcv + summary.monthlyContributionUsdBcv
-      );
+      cat.monthlyUsdBcv = round2(cat.monthlyUsdBcv + monthlyContributionUsdBcv);
 
-      estimatedMonthlyBasketUsdBcv += summary.monthlyContributionUsdBcv;
-      estimatedMonthlyBasketAvgUsdBcv +=
-        summary.averageUnitUsdBcv * summary.basketMonthlyQty;
-      estimatedMonthlyBasketVes +=
-        summary.cheapestUnitVes * summary.basketMonthlyQty;
-      estimatedMonthlyBasketAvgVes +=
-        summary.averageUnitVes * summary.basketMonthlyQty;
+      const qty = summary.basketMonthlyQty;
+      estimatedMonthlyBasketUsdBcv += monthlyContributionUsdBcv;
+      estimatedMonthlyBasketRobustUsdBcv += robustMonthlyContributionUsdBcv;
+      estimatedMonthlyBasketMedianUsdBcv += medianUnitUsdBcv * qty;
+      estimatedMonthlyBasketAvgUsdBcv += averageUnitUsdBcv * qty;
+      estimatedMonthlyBasketVes += cheapestUnitVes * qty;
+      estimatedMonthlyBasketRobustVes += robustCheapestUnitVes * qty;
+      estimatedMonthlyBasketAvgVes += averageUnitVes * qty;
 
-      if (summary.cheapestUnitUsdParallel !== null) {
-        parallelAccum +=
-          summary.cheapestUnitUsdParallel * summary.basketMonthlyQty;
-      } else {
-        hasAllParallel = false;
-      }
-
-      if (summary.averageUnitUsdParallel !== null) {
-        parallelAvgAccum +=
-          summary.averageUnitUsdParallel * summary.basketMonthlyQty;
-      } else {
-        hasAllAvgParallel = false;
-      }
+      addParallelSample(parallelAcc, summary.cheapestUnitUsdParallel, qty);
+      addParallelSample(parallelRobustAcc, summary.robustCheapestUnitUsdParallel, qty);
+      addParallelSample(parallelAvgAcc, summary.averageUnitUsdParallel, qty);
     }
 
     categoryMap.set(summary.category, cat);
   }
 
   estimatedMonthlyBasketUsdBcv = round2(estimatedMonthlyBasketUsdBcv);
-  estimatedMonthlyBasketAvgUsdBcv = round2(estimatedMonthlyBasketAvgUsdBcv);
-  estimatedMonthlyBasketVes = round2(estimatedMonthlyBasketVes);
-  estimatedMonthlyBasketAvgVes = round2(estimatedMonthlyBasketAvgVes);
-
-  const estimatedMonthlyBasketUsdParallel =
-    coveredProductsCount > 0 && hasAllParallel ? round2(parallelAccum) : null;
-  const estimatedMonthlyBasketAvgUsdParallel =
-    coveredProductsCount > 0 && hasAllAvgParallel
-      ? round2(parallelAvgAccum)
-      : null;
-
   const totalProductsCount = products.length;
   const coveragePct =
     totalProductsCount > 0
@@ -287,14 +351,20 @@ export function computeBasketIndex(
 
   return {
     estimatedMonthlyBasketUsdBcv,
-    estimatedMonthlyBasketAvgUsdBcv,
-    estimatedMonthlyBasketVes,
-    estimatedMonthlyBasketAvgVes,
-    estimatedMonthlyBasketUsdParallel,
-    estimatedMonthlyBasketAvgUsdParallel,
+    estimatedMonthlyBasketRobustUsdBcv: round2(estimatedMonthlyBasketRobustUsdBcv),
+    estimatedMonthlyBasketMedianUsdBcv: round2(estimatedMonthlyBasketMedianUsdBcv),
+    estimatedMonthlyBasketAvgUsdBcv: round2(estimatedMonthlyBasketAvgUsdBcv),
+    estimatedMonthlyBasketVes: round2(estimatedMonthlyBasketVes),
+    estimatedMonthlyBasketRobustVes: round2(estimatedMonthlyBasketRobustVes),
+    estimatedMonthlyBasketAvgVes: round2(estimatedMonthlyBasketAvgVes),
+    estimatedMonthlyBasketUsdParallel: finalizeParallel(coveredProductsCount, parallelAcc),
+    estimatedMonthlyBasketRobustUsdParallel: finalizeParallel(coveredProductsCount, parallelRobustAcc),
+    estimatedMonthlyBasketAvgUsdParallel: finalizeParallel(coveredProductsCount, parallelAvgAcc),
     coveredProductsCount,
     totalProductsCount,
     coveragePct,
+    flaggedProductsCount,
+    outlierOffersCount,
     benchmarkDeltaUsd,
     benchmarkDeltaPct,
     benchmarkReferenceLabel,

@@ -179,8 +179,17 @@ export function ProductComparisonView({
                 Dispersión entre cadenas
               </div>
               <div className="text-xl font-bold text-amber-200">
-                {formatPct(viewStats.spreadPct)}
+                {viewStats.outlierCount > 0
+                  ? formatPct(viewStats.robustSpreadPct ?? viewStats.spreadPct)
+                  : formatPct(viewStats.spreadPct)}
               </div>
+              {viewStats.outlierCount > 0 && (
+                <div className="text-[11px] text-amber-400/80">
+                  Bruta: {formatPct(viewStats.spreadPct)} ·{" "}
+                  {viewStats.outlierCount} atípico
+                  {viewStats.outlierCount === 1 ? "" : "s"}
+                </div>
+              )}
             </div>
           </div>
         </div>

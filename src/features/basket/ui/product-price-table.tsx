@@ -131,7 +131,22 @@ export function ProductPriceTable({
                     )}
                   </td>
                   <td className="px-4 py-2.5 text-right text-amber-200 tabular-nums whitespace-nowrap">
-                    {formatPct(product.spreadPct)}
+                    {product.outlierCount > 0 ? (
+                      <div>
+                        <div>
+                          {formatPct(
+                            product.robustSpreadPct ?? product.spreadPct
+                          )}
+                        </div>
+                        <div className="text-[11px] text-amber-400/80">
+                          Bruta: {formatPct(product.spreadPct)} ·{" "}
+                          {product.outlierCount} atípico
+                          {product.outlierCount === 1 ? "" : "s"}
+                        </div>
+                      </div>
+                    ) : (
+                      formatPct(product.spreadPct)
+                    )}
                   </td>
                   <td className="px-4 py-2.5 text-center whitespace-nowrap">
                     {product.retailerCount === 0 ? (
